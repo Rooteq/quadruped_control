@@ -1,6 +1,85 @@
 #pragma once
 
-struct GaitScheduler
+#include <array>
+#include <cmath>
+#include <string>
+
+#include "model.hpp"
+
+namespace quadro
 {
-    int a = 0;
+
+struct GaitDefinition
+{
+    std::string name;
+    double period;                          // seconds, one full gait cycle
+    double duty_cycle;                      // fraction of period spent in stance [0,1]
+    std::array<double, NUM_LEGS> phase_offsets;  // per leg [FL, FR, BL, BR]
 };
+
+namespace gaits
+{
+    inline const GaitDefinition TROT  = {"trot",  0.5,  0.5,  {0.0, 0.5, 0.5, 0.0}};
+    inline const GaitDefinition WALK  = {"walk",  0.8,  0.75, {0.0, 0.5, 0.75, 0.25}};
+    inline const GaitDefinition PACE  = {"pace",  0.5,  0.5,  {0.0, 0.5, 0.0, 0.5}};
+    inline const GaitDefinition BOUND = {"bound", 0.5,  0.4,  {0.0, 0.0, 0.5, 0.5}};
+    inline const GaitDefinition PRONK = {"pronk", 0.5,  0.3,  {0.0, 0.0, 0.0, 0.0}};
+    inline const GaitDefinition STAND = {"stand", 1.0,  1.0,  {0.0, 0.0, 0.0, 0.0}};
+}
+
+class GaitScheduler
+{
+public:
+    GaitScheduler() : gait_(gaits::TROT) {}
+    explicit GaitScheduler(const GaitDefinition& gait) : gait_(gait) {}
+
+    void advance(double dt)
+    {
+        phase_ = std::fmod(phase_ + dt / gait_.period, 1.0);
+    }
+
+    void setGait(const GaitDefinition& gait)
+    {
+        gait_ = gait;
+        // phase keeps running — new offsets/duty take effect immediately
+    }
+
+    bool inStance(int leg_idx) const
+    {
+        return legPhase(leg_idx) < gait_.duty_cycle;
+    }
+
+    /// Normalized progress through swing [0, 1]. Returns -1 if leg is in stance.
+    double swingPhase(int leg_idx) const
+    {
+        double lp = legPhase(leg_idx);
+        if (lp < gait_.duty_cycle) return -1.0;
+        return (lp - gait_.duty_cycle) / (1.0 - gait_.duty_cycle);
+    }
+
+    /// Normalized progress through stance [0, 1]. Returns -1 if leg is in swing.
+    double stancePhase(int leg_idx) const
+    {
+        double lp = legPhase(leg_idx);
+        if (lp >= gait_.duty_cycle) return -1.0;
+        return lp / gait_.duty_cycle;
+    }
+
+    // TODO: contactTable(int horizon_steps, double mpc_dt) for MPC
+    // Returns std::array<std::array<bool, NUM_LEGS>, N> by simulating
+    // phase forward: future_phase = fmod(phase_ + k * mpc_dt / period_, 1.0)
+
+    double phase() const { return phase_; }
+    const GaitDefinition& gait() const { return gait_; }
+
+private:
+    double legPhase(int leg_idx) const
+    {
+        return std::fmod(phase_ + gait_.phase_offsets[leg_idx], 1.0);
+    }
+
+    GaitDefinition gait_;
+    double phase_ = 0.0;
+};
+
+} // namespace quadro

@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "inverse_kinematics.hpp"
+#include "gait_scheduler.hpp"
 
 namespace quadro
 {
@@ -18,8 +19,10 @@ public:
     explicit TrajectoryGenerator(double dt) : dt_(dt) {}
 
     /// Generate desired joint positions in canonical (JointIdx) order.
+    /// Only computes swing leg targets; stance legs hold current position.
     std::array<double, 12> generate(
         const QuadroModel& model,
+        const GaitScheduler& gait,
         const Eigen::Vector3d& desired_linear_vel,
         const Eigen::Vector3d& desired_angular_vel);
 
@@ -27,7 +30,7 @@ private:
     double dt_ = 0.033;  // default 30Hz
     InverseKinematics ik;
 
-    Eigen::Vector3d legs_origin[sizeof(LegIdx)] = {{0.185, 0.0628, 0.0},
+    Eigen::Vector3d legs_origin[NUM_LEGS] = {{0.185, 0.0628, 0.0},
                                      {0.185, -0.0628, 0.0},
                                      {-0.185, 0.0628, 0.0},
                                      {-0.185, -0.0628, 0.0}};

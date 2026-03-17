@@ -8,6 +8,7 @@
 
 #include "model.hpp"
 #include "trajectory_generator.hpp"
+#include "gait_scheduler.hpp"
 
 namespace quadro
 {
@@ -20,7 +21,7 @@ class Controller
 public:
     Controller() = default;
     explicit Controller(const std::string& urdf_path, double planning_dt)
-        : quadro_model_(urdf_path), trajectory_generator_(planning_dt)
+        : quadro_model_(urdf_path), planning_dt_(planning_dt), trajectory_generator_(planning_dt)
     {
     }
 
@@ -37,8 +38,9 @@ public:
 
     void runPlanning()
     {
+        gait_scheduler_.advance(planning_dt_);
         desired_joint_positions_ = trajectory_generator_.generate(
-            quadro_model_, desired_linear_vel_, desired_angular_vel_);
+            quadro_model_, gait_scheduler_, desired_linear_vel_, desired_angular_vel_);
     }
 
     /// Return desired joint positions in canonical (JointIdx) order.
@@ -57,7 +59,10 @@ private:
     Eigen::Vector3d desired_linear_vel_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d desired_angular_vel_ = Eigen::Vector3d::Zero();
 
+    double planning_dt_ = 0.033;
     TrajectoryGenerator trajectory_generator_;
+    GaitScheduler gait_scheduler_;
+
     std::array<double, NUM_JOINTS> desired_joint_positions_{};
 };
 
