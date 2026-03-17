@@ -2,3 +2,5 @@ build
 log
 install
 description/assets
+.vscode
+*.md
