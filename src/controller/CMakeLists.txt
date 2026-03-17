@@ -2,6 +2,8 @@ add_library(controller STATIC
     src/gait_scheduler.cpp
     src/quadro_controller.cpp
     src/inverse_kinematics.cpp
+    src/model.cpp
+    src/trajectory_generator.cpp
     )
 
 find_package(Eigen3 REQUIRED)

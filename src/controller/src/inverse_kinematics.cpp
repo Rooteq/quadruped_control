@@ -1,12 +1,12 @@
-#include "../include/inverse_kinematics.hpp"
+#include "inverse_kinematics.hpp"
 
-namespace IK
+namespace quadro
 {
-void InverseKinematics::calcJointPositions(Leg leg, double x, double y, double z)
+void InverseKinematics::calcJointPositions(LegIdx leg, double x, double y, double z)
 {
     basic_ik_calcs(leg, x,y,z);
 
-    if(leg == Leg::BL || leg == Leg::FL)
+    if(leg == LegIdx::BL || leg == LegIdx::FL)
     {
         legs[leg].q1 += (joint_offset_1 - M_PI/2);
         legs[leg].q2 += (-joint_offset_2 + M_PI/2);
@@ -22,18 +22,18 @@ void InverseKinematics::calcJointPositions(Leg leg, double x, double y, double z
     // Apply motor reversals based on URDF axis directions
     // Reversed joints (z = -1): br_m1_s1, br_m2_s2, br_m3_s3, fr_m2_s2, fr_m3_s3
     // SIMULATION:
-    if(leg == Leg::BR) {
+    if(leg == LegIdx::BR) {
         legs[leg].q1 = -legs[leg].q1;
         legs[leg].q2 = -legs[leg].q2;
         legs[leg].q3 = -legs[leg].q3;
 
         //VERY IMPORTANT - THE MOTOR IS OFFSET FOR SOME REASON
     }
-    else if(leg == Leg::FR) {
+    else if(leg == LegIdx::FR) {
         legs[leg].q2 = -legs[leg].q2;
         legs[leg].q3 = -legs[leg].q3;
     }
-    else if(leg == Leg::BL) {
+    else if(leg == LegIdx::BL) {
         legs[leg].q1 = -legs[leg].q1;
     }
 
@@ -52,9 +52,9 @@ void InverseKinematics::calcJointPositions(Leg leg, double x, double y, double z
     // }
 }
 
-void InverseKinematics::basic_ik_calcs(Leg leg, double x, double y, double z)
+void InverseKinematics::basic_ik_calcs(LegIdx leg, double x, double y, double z)
 {
-    if(leg == Leg::BL || leg == Leg::FL)
+    if(leg == LegIdx::BL || leg == LegIdx::FL)
         y = y+l1;
     else
         y = -y + l1;
@@ -73,7 +73,7 @@ void InverseKinematics::basic_ik_calcs(Leg leg, double x, double y, double z)
     double angle1 = std::atan2(AG,OA);
     double angle2 = std::atan2(y,z);
 
-    if(leg == Leg::BL || leg == Leg::FL)
+    if(leg == LegIdx::BL || leg == LegIdx::FL)
         legs[leg].q1 = normalize_angle(-(angle1 - angle2));
     else
         legs[leg].q1 = normalize_angle(angle1 - angle2);

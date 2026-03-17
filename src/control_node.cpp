@@ -6,46 +6,59 @@
 
 #include "quadro_controller.hpp"
 
+#include <eigen3/Eigen/Dense>
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
 using namespace std::chrono_literals;
 
-
+// ── Timer periods ────────────────────────────────────────────────
+static constexpr auto CONTROL_PERIOD  = 3333us;  // ~300 Hz
+static constexpr auto PLANNING_PERIOD = 33ms;     // ~30 Hz
+static constexpr auto MPC_PERIOD      = 33ms;     // ~30 Hz
+static constexpr double PLANNING_DT   = 0.033;    // seconds, matches PLANNING_PERIOD
 
 // ── Snapshot structs ─────────────────────────────────────────────
 
 struct JointSnapshot {
     std::array<double, quadro::NUM_JOINTS> position{};
     std::array<double, quadro::NUM_JOINTS> velocity{};
+    std::array<double, quadro::NUM_JOINTS> effort{};
     bool valid = false;
-};
-
-struct CmdVelSnapshot {
-    double vx = 0.0;
-    double vy = 0.0;
-    double vz = 0.0;
-    double wx = 0.0;
-    double wy = 0.0;
-    double wz = 0.0;
 };
 
 // ── Node ─────────────────────────────────────────────────────────
 
-class ConvexMpcController : public rclcpp::Node {
+class QuadroController : public rclcpp::Node {
 public:
-    ConvexMpcController()
-    : Node("convex_mpc_controller")
+    QuadroController()
+    : Node("quadro_controller")
     {
+
+        std::string package_path = ament_index_cpp::get_package_share_directory("quadruped_control");
+        std::string urdf_file = package_path + "/description/isaac_sim/quadro.urdf";        
+
+        try
+        {
+            controller_ = quadro::Controller(urdf_file, PLANNING_DT);
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Failed to create controller: %s", e.what());
+            throw;
+        }
+        
 
         sub_joint_states_ = this->create_subscription<sensor_msgs::msg::JointState>(
             "/joint_states", 10,
-            std::bind(&ConvexMpcController::jointStateCallback, this, std::placeholders::_1));
+            std::bind(&QuadroController::jointStateCallback, this, std::placeholders::_1));
 
         sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
             "/cmd_vel", 10,
-            std::bind(&ConvexMpcController::cmdVelCallback, this, std::placeholders::_1));
+            std::bind(&QuadroController::cmdVelCallback, this, std::placeholders::_1));
 
 
         pub_joint_cmd_ = this->create_publisher<sensor_msgs::msg::JointState>(
@@ -53,16 +66,16 @@ public:
 
 
         control_timer_ = this->create_wall_timer(
-            3333us,  // ~300 Hz
-            std::bind(&ConvexMpcController::controlCallback, this));
+            CONTROL_PERIOD,
+            std::bind(&QuadroController::controlCallback, this));
 
         mpc_timer_ = this->create_wall_timer(
-            33ms,    // ~30 Hz
-            std::bind(&ConvexMpcController::mpcCallback, this));
+            MPC_PERIOD,
+            std::bind(&QuadroController::mpcCallback, this));
 
         planning_timer_ = this->create_wall_timer(
-            33ms,    // ~30 Hz
-            std::bind(&ConvexMpcController::planningCallback, this));
+            PLANNING_PERIOD,
+            std::bind(&QuadroController::planningCallback, this));
 
         RCLCPP_INFO(this->get_logger(), "Controller started");
     }
@@ -83,35 +96,39 @@ private:
                 joint_snap_.position[i] = msg->position[sim_idx];
             if (sim_idx < msg->velocity.size())
                 joint_snap_.velocity[i] = msg->velocity[sim_idx];
+            if (sim_idx < msg->effort.size())
+                joint_snap_.effort[i] = msg->effort[sim_idx];
         }
         joint_snap_.valid = true;
+
+        // Update Pinocchio model right when new data arrives
+        Eigen::Map<const Eigen::VectorXd> q(joint_snap_.position.data(), quadro::NUM_JOINTS);
+        Eigen::Map<const Eigen::VectorXd> dq(joint_snap_.velocity.data(), quadro::NUM_JOINTS);
+        Eigen::Map<const Eigen::VectorXd> effort(joint_snap_.effort.data(), quadro::NUM_JOINTS);
+        controller_.updateState(q, dq, effort);
     }
 
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        std::lock_guard<std::mutex> lock(state_mutex_);
-        cmd_vel_snap_.vx = msg->linear.x;
-        cmd_vel_snap_.vy = msg->linear.y;
-        cmd_vel_snap_.vz = msg->linear.z;
-        cmd_vel_snap_.wx = msg->angular.x;
-        cmd_vel_snap_.wy = msg->angular.y;
-        cmd_vel_snap_.wz = msg->angular.z;
+        controller_.setDesiredVelocity(
+            Eigen::Vector3d(msg->linear.x, msg->linear.y, msg->linear.z),
+            Eigen::Vector3d(msg->angular.x, msg->angular.y, msg->angular.z));
     }
 
-
+    // How will it destinguish between stance / swing joints - the desired torques should be returned by calculate control, but there,
+    // the distinction should be made between torque generated by desired forces on stance legs and torques generated by desired position 
+    // by swing/trajectory controller
     void controlCallback()
     {
-        JointSnapshot joints;
         {
             std::lock_guard<std::mutex> lock(state_mutex_);
-            joints = joint_snap_;
+            if (!joint_snap_.valid) return;
         }
 
-        if (!joints.valid) return;
-
-        // For now: echo back current positions (hold in place)
-        // Later: stance torques from MPC, swing PD tracking
-        publishJointCommand(joints.position);
+        // Returns desired joint positions in canonical (JointIdx) order.
+        // publishJointCommand remaps to sim order.
+        auto cmd = controller_.calculateControl();
+        publishJointCommand(cmd);
     }
 
     void mpcCallback()
@@ -127,11 +144,12 @@ private:
 
     void planningCallback()
     {
-        // Will contain:
-        //   1. Advance gait phase
-        //   2. Determine stance/swing per leg
-        //   3. Raibert foot placement for swing legs
-        //   4. Init/update swing trajectories
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            if (!joint_snap_.valid) return;
+        }
+
+        controller_.runPlanning();
     }
 
     // ── Helpers ──────────────────────────────────────────────────
@@ -190,10 +208,12 @@ private:
         pub_joint_cmd_->publish(msg);
     }
 
+private:
+    quadro::Controller controller_;
+
     // ── State (mutex-protected, written by subscribers) ──────────
     std::mutex state_mutex_;
     JointSnapshot joint_snap_;
-    CmdVelSnapshot cmd_vel_snap_;
 
     // ── Joint mapping ────────────────────────────────────────────
     bool joint_map_ready_ = false;
@@ -212,7 +232,7 @@ private:
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ConvexMpcController>());
+    rclcpp::spin(std::make_shared<QuadroController>());
     rclcpp::shutdown();
     return 0;
 }

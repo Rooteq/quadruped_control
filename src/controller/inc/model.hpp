@@ -1,0 +1,83 @@
+#pragma once
+
+#include <array>
+#include <string>
+#include <eigen3/Eigen/Dense>
+
+#include <pinocchio/parsers/urdf.hpp>
+#include <pinocchio/algorithm/joint-configuration.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/jacobian.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/center-of-mass.hpp>
+
+namespace quadro
+{
+
+        
+static constexpr size_t NUM_JOINTS = 12;
+static constexpr size_t NUM_LEGS = 4;
+static constexpr size_t JOINTS_PER_LEG = 3;
+
+// ── Canonical joint order ────────────────────────────────────────
+// Grouped by leg: FL, FR, BL, BR × (hip, knee, ankle)
+// Use JointIdx to index into q, dq, effort, Kp, Kd arrays.
+
+enum LegIdx  { FL = 0, FR = 1, BL = 2, BR = 3 };
+enum JointIdx {
+    FL_HIP = 0, FL_KNEE, FL_ANKLE,
+    FR_HIP,     FR_KNEE, FR_ANKLE,
+    BL_HIP,     BL_KNEE, BL_ANKLE,
+    BR_HIP,     BR_KNEE, BR_ANKLE
+};
+
+// EXPECTED_JOINT_NAMES[i] is the URDF joint name for JointIdx i
+static const std::array<std::string, NUM_JOINTS> EXPECTED_JOINT_NAMES = {
+    "fl_m1_s1",   "fl_m2_s2",   "fl_l4_l3",   // FL: hip, knee, ankle
+    "fr_m1_s1",   "fr_m2_s2",   "fr_l4_l3",   // FR
+    "bl_m1_s1",   "bl_m2_s2",   "bl_l4_l3",   // BL
+    "br_m1_s1",   "br_m2_s2",   "br_l4_l3",   // BR
+};
+
+class QuadroModel
+{
+public:
+    QuadroModel() = default;
+
+    /// Build model from URDF. joint_names defines the canonical ordering —
+    /// the mapping from your JointIdx to Pinocchio's internal order is
+    /// computed once here.
+    explicit QuadroModel(const std::string& urdf_path);
+
+    /// Update joint state and run Pinocchio forward algorithms.
+    /// q, dq, effort are in canonical (JointIdx) order.
+    void updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& dq,
+                     const Eigen::VectorXd& effort);
+
+    // State in canonical order — index with JointIdx: q_[FL_HIP], dq_[BR_ANKLE], etc.
+    const Eigen::VectorXd& jointPositions() const { return q_; }
+    const Eigen::VectorXd& jointVelocities() const { return dq_; }
+    const Eigen::VectorXd& jointEfforts() const { return effort_; }
+
+    const pinocchio::Model& pinocchioModel() const { return model_; }
+    const pinocchio::Data& pinocchioData() const { return data_; }
+
+private:
+    pinocchio::Model model_;
+    pinocchio::Data data_;
+
+    // Joint state in canonical (JointIdx) order
+    Eigen::VectorXd q_;
+    Eigen::VectorXd dq_;
+    Eigen::VectorXd effort_;
+
+    // Temporary vectors in Pinocchio order (avoid reallocation)
+    Eigen::VectorXd q_pin_;
+    Eigen::VectorXd dq_pin_;
+
+    // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
+    std::array<int, 12> canonical_to_pin_;
+};
+    
+} // namespace quadro
+
