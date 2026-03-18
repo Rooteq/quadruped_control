@@ -35,6 +35,25 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
             pinocchio::JointIndex jid = model_.getJointId(name);
             canonical_to_pin_[i] = model_.idx_qs[jid];
         }
+
+        // Cache foot and hip frame IDs (order: FL, FR, BL, BR)
+        const std::array<std::string, NUM_LEGS> foot_frame_names = {
+            "fl_feet", "fr_feet", "bl_feet", "br_feet"
+        };
+        const std::array<std::string, NUM_LEGS> hip_frame_names = {
+            "fl_m1_s1", "fr_m1_s1", "bl_m1_s1", "br_m1_s1"
+        };
+
+        for (size_t i = 0; i < NUM_LEGS; ++i)
+        {
+            if (!model_.existFrame(foot_frame_names[i]))
+                throw std::runtime_error("Foot frame '" + foot_frame_names[i] + "' not found in URDF");
+            if (!model_.existFrame(hip_frame_names[i]))
+                throw std::runtime_error("Hip frame '" + hip_frame_names[i] + "' not found in URDF");
+
+            foot_frame_ids_[i] = model_.getFrameId(foot_frame_names[i]);
+            hip_frame_ids_[i] = model_.getFrameId(hip_frame_names[i]);
+        }
     }
     catch (const std::exception& e)
     {
@@ -62,6 +81,16 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
     pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
+}
+
+Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const
+{
+    return data_.oMf[foot_frame_ids_[leg_idx]].translation();
+}
+
+Eigen::Vector3d QuadroModel::hipPosition(int leg_idx) const
+{
+    return data_.oMf[hip_frame_ids_[leg_idx]].translation();
 }
 
 } // namespace quadro

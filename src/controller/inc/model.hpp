@@ -59,6 +59,12 @@ public:
     const Eigen::VectorXd& jointVelocities() const { return dq_; }
     const Eigen::VectorXd& jointEfforts() const { return effort_; }
 
+    /// Foot position in body frame (from Pinocchio FK, updated by updateState)
+    Eigen::Vector3d footPosition(int leg_idx) const;
+
+    /// Hip joint position in body frame
+    Eigen::Vector3d hipPosition(int leg_idx) const;
+
     const pinocchio::Model& pinocchioModel() const { return model_; }
     const pinocchio::Data& pinocchioData() const { return data_; }
 
@@ -77,6 +83,10 @@ private:
 
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, 12> canonical_to_pin_;
+
+    // Cached frame IDs (set once in constructor)
+    std::array<pinocchio::FrameIndex, NUM_LEGS> foot_frame_ids_;
+    std::array<pinocchio::FrameIndex, NUM_LEGS> hip_frame_ids_;
 };
     
 } // namespace quadro

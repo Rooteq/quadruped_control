@@ -41,6 +41,7 @@ install(
   DIRECTORY
     description
     config
+    launch
   DESTINATION "share/${PROJECT_NAME}"
 )
 
