@@ -43,14 +43,20 @@ std::array<double, 12> TrajectoryGenerator::generate(
             Eigen::Vector3d foot_target = evaluateSwing(swing_states_[leg], phase);
 
             // Convert body-frame foot position to hip-local for IK
-            Eigen::Vector3d hip_pos = model.hipPosition(leg);
+            Eigen::Vector3d hip_pos = hipPos[leg];
 
 
             // Eigen::Vector3d foot_local = foot_target - hip_pos;
-            Eigen::Vector3d foot_local = foot_target - hip_pos;
+            // Eigen::Vector3d foot_local = foot_target - hip_pos;
+            // Eigen::Vector3d foot_target = Eigen::Vector3d(0.112, -0.188, -0.27);
+            // Eigen::Vector3d foot_pose = Eigen::Vector3d(0.0, 0.0, -0.27) + hip_pos;
+            // Eigen::Vector3d foot_pose = foot_target + hip_pos;
+            Eigen::Vector3d foot_pose = foot_target;
 
+            // ik.calcJointPositions(static_cast<LegIdx>(leg),
+            //                       foot_local.x(), foot_local.y(), foot_local.z());
             ik.calcJointPositions(static_cast<LegIdx>(leg),
-                                  foot_local.x(), foot_local.y(), foot_local.z());
+                                  foot_pose);
 
             desired_positions[base + 0] = ik.legs[leg].q1;
             desired_positions[base + 1] = ik.legs[leg].q2;
@@ -68,7 +74,8 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const Eigen::Vector3d& body_velocity) const
 {
     // Raibert heuristic: land under hip + velocity compensation
-    Eigen::Vector3d hip_pos = model.hipPosition(leg_idx);
+    // Eigen::Vector3d hip_pos = model.hipPosition(leg_idx);
+    Eigen::Vector3d hip_pos = hipPos[leg_idx];
 
     // Project hip onto nominal ground plane in body frame
     Eigen::Vector3d hip_ground = hip_pos;

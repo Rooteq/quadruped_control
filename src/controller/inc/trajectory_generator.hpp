@@ -51,11 +51,17 @@ private:
     InverseKinematics ik;
     std::array<SwingState, NUM_LEGS> swing_states_;
 
+    Eigen::Vector3d hipPos[NUM_LEGS] = {
+                    {0.112, -0.188, 0.0},
+                    {-0.112, -0.188, 0.0},
+                    {0.112, 0.188, 0.0},
+                    {-0.112, 0.188, 0.0}
+                };
 
-    Eigen::Vector3d legs_origin[NUM_LEGS] = {{0.185, 0.0628, 0.0},
-                    {0.185, -0.0628, 0.0},
-                    {-0.185, 0.0628, 0.0},
-                    {-0.185, -0.0628, 0.0}};
+    // Eigen::Vector3d legs_origin[NUM_LEGS] = {{0.185, 0.0628, 0.0},
+    //                 {0.185, -0.0628, 0.0},
+    //                 {-0.185, 0.0628, 0.0},
+    //                 {-0.185, -0.0628, 0.0}};
 
 };
 

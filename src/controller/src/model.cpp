@@ -37,9 +37,13 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
         }
 
         // Cache foot and hip frame IDs (order: FL, FR, BL, BR)
+        // const std::array<std::string, NUM_LEGS> foot_frame_names = {
+        //     "fl_feet", "fr_feet", "bl_feet", "br_feet"
+        // };
         const std::array<std::string, NUM_LEGS> foot_frame_names = {
-            "fl_feet", "fr_feet", "bl_feet", "br_feet"
+            "feet_4", "feet_3", "feet_2", "feet"
         };
+
         const std::array<std::string, NUM_LEGS> hip_frame_names = {
             "fl_m1_s1", "fr_m1_s1", "bl_m1_s1", "br_m1_s1"
         };
@@ -88,7 +92,8 @@ Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const
     return data_.oMf[foot_frame_ids_[leg_idx]].translation();
 }
 
-Eigen::Vector3d QuadroModel::hipPosition(int leg_idx) const
+// Robot's model should include frames in the hip position, now manually calculated hip location is used
+Eigen::Vector3d QuadroModel::hipPosition(int leg_idx) const 
 {
     return data_.oMf[hip_frame_ids_[leg_idx]].translation();
 }

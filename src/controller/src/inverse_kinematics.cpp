@@ -2,9 +2,9 @@
 
 namespace quadro
 {
-void InverseKinematics::calcJointPositions(LegIdx leg, double x, double y, double z)
+void InverseKinematics::calcJointPositions(LegIdx leg, Eigen::Vector3d desired_pos)
 {
-    basic_ik_calcs(leg, x,y,z);
+    basic_ik_calcs(leg, desired_pos);
 
     if(leg == LegIdx::BL || leg == LegIdx::FL)
     {
@@ -52,8 +52,14 @@ void InverseKinematics::calcJointPositions(LegIdx leg, double x, double y, doubl
     // }
 }
 
-void InverseKinematics::basic_ik_calcs(LegIdx leg, double x, double y, double z)
+void InverseKinematics::basic_ik_calcs(LegIdx leg, Eigen::Vector3d desired_pos)
 {
+    desired_pos = desired_pos - hip_pos[leg];
+
+    double x = desired_pos[0];
+    double y = desired_pos[1];
+    double z = desired_pos[2];
+
     if(leg == LegIdx::BL || leg == LegIdx::FL)
         y = y+l1;
     else

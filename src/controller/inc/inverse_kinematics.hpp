@@ -24,13 +24,13 @@ class InverseKinematics
 public:
     InverseKinematics() = default;
 
-    void calcJointPositions(LegIdx leg, double x, double y, double z);
+    void calcJointPositions(LegIdx leg, Eigen::Vector3d desired_pos);
 
 public:
 
     std::array<LegJointPositions, sizeof(LegIdx)> legs;
 private:
-    void basic_ik_calcs(LegIdx leg, double x, double y, double z);
+    void basic_ik_calcs(LegIdx leg, Eigen::Vector3d desired_pos);
 
     double normalize_angle(double angle) {
         while (angle > M_PI) angle -= 2.0 * M_PI;
@@ -45,5 +45,12 @@ private:
   double joint_offset_1 = 0.7854;
   double joint_offset_2 = 0.3491;
   double joint_offset_3 = 0.3491;
+
+    Eigen::Vector3d hip_pos[NUM_LEGS] = {
+                    {0.112, -0.188, 0.0},
+                    {-0.112, -0.188, 0.0},
+                    {0.112, 0.188, 0.0},
+                    {-0.112, 0.188, 0.0}
+                };
 };
 } // namespace quadro

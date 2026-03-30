@@ -87,6 +87,9 @@ private:
     // Cached frame IDs (set once in constructor)
     std::array<pinocchio::FrameIndex, NUM_LEGS> foot_frame_ids_;
     std::array<pinocchio::FrameIndex, NUM_LEGS> hip_frame_ids_;
+
+
+
 };
     
 } // namespace quadro
