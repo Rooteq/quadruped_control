@@ -20,6 +20,7 @@ struct SwingState {
     bool active = false;
     bool stance_initialized = false;
     std::array<double, JOINTS_PER_LEG> stance_joints{};  // fixed joint angles held during stance
+    Eigen::Vector3d stance_foot_pos = Eigen::Vector3d::Zero();  // current stance foot target (drifts with fake walk)
 };
 
 class TrajectoryGenerator
@@ -44,8 +45,12 @@ private:
         int leg_idx,
         const Eigen::Vector3d& body_velocity) const;
 
-    /// Half-sine swing arc: XY linear interp, Z sine bump
+    /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;
+
+    /// [TEMPORARY] Fake walking: drift stance feet opposite to velocity each tick.
+    /// Remove once MPC produces real ground reaction forces.
+    void fakeStanceWalk(int leg_idx, const Eigen::Vector3d& desired_linear_vel);
 
     static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
 

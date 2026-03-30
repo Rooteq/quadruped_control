@@ -18,17 +18,22 @@ std::array<double, 12> TrajectoryGenerator::generate(
 
         if (gait.inStance(leg))
         {
-            // On swing→stance transition, compute stance joint angles from landing target
+            // On swing→stance transition, initialize stance foot position
             if (!swing_states_[leg].stance_initialized)
             {
-                Eigen::Vector3d stance_foot = swing_states_[leg].landing_pos;
-                ik.calcJointPositions(static_cast<LegIdx>(leg), stance_foot);
-                swing_states_[leg].stance_joints = {
-                    ik.legs[leg].q1, ik.legs[leg].q2, ik.legs[leg].q3};
+                swing_states_[leg].stance_foot_pos = swing_states_[leg].landing_pos;
                 swing_states_[leg].stance_initialized = true;
             }
 
-            // Hold fixed touchdown pose (later replaced by MPC torques)
+            // [TEMPORARY] Drift foot opposite to velocity to fake walking
+            fakeStanceWalk(leg, desired_linear_vel);
+
+            // Recompute IK from drifting foot position
+            ik.calcJointPositions(static_cast<LegIdx>(leg),
+                                  swing_states_[leg].stance_foot_pos);
+            swing_states_[leg].stance_joints = {
+                ik.legs[leg].q1, ik.legs[leg].q2, ik.legs[leg].q3};
+
             swing_states_[leg].active = false;
             desired_positions[base + 0] = swing_states_[leg].stance_joints[0];
             desired_positions[base + 1] = swing_states_[leg].stance_joints[1];
@@ -123,6 +128,14 @@ Eigen::Vector3d TrajectoryGenerator::evaluateSwing(
     double z = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
 
     return {x, y, z};
+}
+
+void TrajectoryGenerator::fakeStanceWalk(int leg_idx, const Eigen::Vector3d& desired_linear_vel)
+{
+    // Move foot opposite to desired velocity (body moves forward → foot slides back)
+    swing_states_[leg_idx].stance_foot_pos.x() -= desired_linear_vel.x() * dt_;
+    swing_states_[leg_idx].stance_foot_pos.y() -= desired_linear_vel.y() * dt_;
+    // Z stays at NOMINAL_HEIGHT — foot stays on ground
 }
 
 } // namespace quadro
