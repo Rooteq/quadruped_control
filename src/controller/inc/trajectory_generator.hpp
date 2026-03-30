@@ -18,6 +18,8 @@ struct SwingState {
     Eigen::Vector3d landing_pos = Eigen::Vector3d::Zero();  // body frame
     double apex_height = 0.05;  // meters above liftoff/landing z
     bool active = false;
+    bool stance_initialized = false;
+    std::array<double, JOINTS_PER_LEG> stance_joints{};  // fixed joint angles held during stance
 };
 
 class TrajectoryGenerator

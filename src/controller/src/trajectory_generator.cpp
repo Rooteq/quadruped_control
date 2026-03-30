@@ -18,19 +18,29 @@ std::array<double, 12> TrajectoryGenerator::generate(
 
         if (gait.inStance(leg))
         {
-            // Stance: hold current joint positions (later replaced by MPC torques)
+            // On swing→stance transition, compute stance joint angles from landing target
+            if (!swing_states_[leg].stance_initialized)
+            {
+                Eigen::Vector3d stance_foot = swing_states_[leg].landing_pos;
+                ik.calcJointPositions(static_cast<LegIdx>(leg), stance_foot);
+                swing_states_[leg].stance_joints = {
+                    ik.legs[leg].q1, ik.legs[leg].q2, ik.legs[leg].q3};
+                swing_states_[leg].stance_initialized = true;
+            }
+
+            // Hold fixed touchdown pose (later replaced by MPC torques)
             swing_states_[leg].active = false;
-            desired_positions[base + 0] = model.jointPositions()[base + 0];
-            desired_positions[base + 1] = model.jointPositions()[base + 1];
-            desired_positions[base + 2] = model.jointPositions()[base + 2];
+            desired_positions[base + 0] = swing_states_[leg].stance_joints[0];
+            desired_positions[base + 1] = swing_states_[leg].stance_joints[1];
+            desired_positions[base + 2] = swing_states_[leg].stance_joints[2];
         }
         else
         {
-
             /* HERE, THE VELOCITY SHOULD BE THE V_COM - IT SHOULD BE THE RESULT OF MPC WORKING, NOT DESIRED VEL*/
             /* So desired velocity causes mpc to generate forces that propel the body in this direction, legs react*/
 
             // Detect swing entry — initialize trajectory once
+            swing_states_[leg].stance_initialized = false;
             if (!swing_states_[leg].active)
             {
                 swing_states_[leg].liftoff_pos = model.footPosition(leg);
@@ -46,11 +56,6 @@ std::array<double, 12> TrajectoryGenerator::generate(
             Eigen::Vector3d hip_pos = hipPos[leg];
 
 
-            // Eigen::Vector3d foot_local = foot_target - hip_pos;
-            // Eigen::Vector3d foot_local = foot_target - hip_pos;
-            // Eigen::Vector3d foot_target = Eigen::Vector3d(0.112, -0.188, -0.27);
-            // Eigen::Vector3d foot_pose = Eigen::Vector3d(0.0, 0.0, -0.27) + hip_pos;
-            // Eigen::Vector3d foot_pose = foot_target + hip_pos;
             Eigen::Vector3d foot_pose = foot_target;
 
             // ik.calcJointPositions(static_cast<LegIdx>(leg),
@@ -91,18 +96,33 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
 Eigen::Vector3d TrajectoryGenerator::evaluateSwing(
     const SwingState& state, double phase) const
 {
-    Eigen::Vector3d pos;
+    // Smooth-step (Hermite basis): zero velocity at phase=0 and phase=1
+    double s = phase * phase * (3.0 - 2.0 * phase);
 
-    // XY: linear interpolation from liftoff to landing
-    pos.x() = state.liftoff_pos.x() + phase * (state.landing_pos.x() - state.liftoff_pos.x());
-    pos.y() = state.liftoff_pos.y() + phase * (state.landing_pos.y() - state.liftoff_pos.y());
+    // XY: smooth interpolation from liftoff to landing
+    double x = state.liftoff_pos.x() + s * (state.landing_pos.x() - state.liftoff_pos.x());
+    double y = state.liftoff_pos.y() + s * (state.landing_pos.y() - state.liftoff_pos.y());
 
-    // Z: linear interp ground level + half-sine arc for clearance
-    double ground_z = state.liftoff_pos.z()
-                      + phase * (state.landing_pos.z() - state.liftoff_pos.z());
-    pos.z() = ground_z + state.apex_height * std::sin(M_PI * phase);
+    // Z: cubic Bezier with 4 control points for smooth lift-and-place
+    //   P0 = liftoff_z       (start on ground, vel=0)
+    //   P1 = liftoff_z + h   (tangent pulls up → zero horizontal vel at start)
+    //   P2 = landing_z + h   (tangent pulls up → zero horizontal vel at end)
+    //   P3 = landing_z       (end on ground, vel=0)
+    double t = phase;
+    double t2 = t * t;
+    double t3 = t2 * t;
+    double mt = 1.0 - t;
+    double mt2 = mt * mt;
+    double mt3 = mt2 * mt;
 
-    return pos;
+    double p0 = state.liftoff_pos.z();
+    double p1 = state.liftoff_pos.z() + state.apex_height;
+    double p2 = state.landing_pos.z() + state.apex_height;
+    double p3 = state.landing_pos.z();
+
+    double z = mt3 * p0 + 3.0 * mt2 * t * p1 + 3.0 * mt * t2 * p2 + t3 * p3;
+
+    return {x, y, z};
 }
 
 } // namespace quadro
