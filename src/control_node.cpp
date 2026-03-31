@@ -10,6 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -60,6 +61,10 @@ public:
             "/cmd_vel", 10,
             std::bind(&QuadroController::cmdVelCallback, this, std::placeholders::_1));
 
+        sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
+            "/odom", 10,
+            std::bind(&QuadroController::odomCallback, this, std::placeholders::_1));
+
 
         pub_joint_cmd_ = this->create_publisher<sensor_msgs::msg::JointState>(
             "/joint_command", 10);
@@ -106,6 +111,27 @@ private:
         Eigen::Map<const Eigen::VectorXd> dq(joint_snap_.velocity.data(), quadro::NUM_JOINTS);
         Eigen::Map<const Eigen::VectorXd> effort(joint_snap_.effort.data(), quadro::NUM_JOINTS);
         controller_.updateState(q, dq, effort);
+
+
+        auto& pino_data = controller_.quadro_model_.pinocchioData();
+        RCLCPP_INFO(this->get_logger(), "vcom: [%.3f, %.3f, %.3f]",
+            pino_data.vcom[0][0], pino_data.vcom[0][1], pino_data.vcom[0][2]);
+        // RCLCPP_INFO(this->get_logger(), "com: [%.3f, %.3f, %.3f]",
+        //     pino_data.com[0][0], pino_data.com[0][1], pino_data.com[0][2]);
+    }
+
+    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+    {
+        const auto& p = msg->pose.pose.position;
+        const auto& q = msg->pose.pose.orientation;
+        const auto& lv = msg->twist.twist.linear;
+        const auto& av = msg->twist.twist.angular;
+
+        controller_.quadro_model_.updateBaseState(
+            Eigen::Vector3d(p.x, p.y, p.z),
+            Eigen::Quaterniond(q.w, q.x, q.y, q.z),
+            Eigen::Vector3d(lv.x, lv.y, lv.z),
+            Eigen::Vector3d(av.x, av.y, av.z));
     }
 
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -223,6 +249,7 @@ private:
     // ── ROS interfaces ───────────────────────────────────────────
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_joint_states_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_cmd_;
     rclcpp::TimerBase::SharedPtr control_timer_;   // 300 Hz
     rclcpp::TimerBase::SharedPtr mpc_timer_;        // 30 Hz

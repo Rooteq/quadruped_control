@@ -84,7 +84,19 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::forwardKinematics(model_, data_, q_pin_, dq_pin_);
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
-    pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
+    // pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
+
+}
+
+void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
+                                   const Eigen::Quaterniond& orientation,
+                                   const Eigen::Vector3d& linear_velocity,
+                                   const Eigen::Vector3d& angular_velocity)
+{
+    base_position_    = position;
+    base_orientation_ = orientation;
+    base_linear_vel_  = linear_velocity;
+    base_angular_vel_ = angular_velocity;
 }
 
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const

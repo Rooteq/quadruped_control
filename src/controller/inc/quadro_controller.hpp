@@ -53,8 +53,10 @@ public:
     const Eigen::Vector3d& desiredLinearVelocity() const { return desired_linear_vel_; }
     const Eigen::Vector3d& desiredAngularVelocity() const { return desired_angular_vel_; }
 
-private:
+public:
     QuadroModel quadro_model_;
+
+private:
 
     Eigen::Vector3d desired_linear_vel_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d desired_angular_vel_ = Eigen::Vector3d::Zero();

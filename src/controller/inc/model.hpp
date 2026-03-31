@@ -65,7 +65,19 @@ public:
     /// Hip joint position in body frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
 
+    /// Update base state from odometry.
+    void updateBaseState(const Eigen::Vector3d& position,
+                         const Eigen::Quaterniond& orientation,
+                         const Eigen::Vector3d& linear_velocity,
+                         const Eigen::Vector3d& angular_velocity);
+
+    const Eigen::Vector3d&    basePosition()        const { return base_position_; }
+    const Eigen::Quaterniond& baseOrientation()     const { return base_orientation_; }
+    const Eigen::Vector3d&    baseLinearVelocity()  const { return base_linear_vel_; }
+    const Eigen::Vector3d&    baseAngularVelocity() const { return base_angular_vel_; }
+
     const pinocchio::Model& pinocchioModel() const { return model_; }
+    pinocchio::Data& pinocchioData() { return data_; }
     const pinocchio::Data& pinocchioData() const { return data_; }
 
 private:
@@ -80,6 +92,12 @@ private:
     // Temporary vectors in Pinocchio order (avoid reallocation)
     Eigen::VectorXd q_pin_;
     Eigen::VectorXd dq_pin_;
+
+    // Base state (from odometry)
+    Eigen::Vector3d    base_position_    = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond base_orientation_ = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d    base_linear_vel_  = Eigen::Vector3d::Zero();
+    Eigen::Vector3d    base_angular_vel_ = Eigen::Vector3d::Zero();
 
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, 12> canonical_to_pin_;
