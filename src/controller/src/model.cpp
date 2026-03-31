@@ -85,6 +85,15 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
     pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
+    pinocchio::computeGeneralizedGravity(model_, data_, q_pin_);
+    pinocchio::centerOfMass(model_, data_, q_pin_);
+
+    // Remap gravity torques from Pinocchio order → canonical order
+    gravity_canonical_.resize(NUM_JOINTS);
+    for (size_t i = 0; i < NUM_JOINTS; ++i)
+    {
+        gravity_canonical_[i] = data_.g[canonical_to_pin_[i]];
+    }
 }
 
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const

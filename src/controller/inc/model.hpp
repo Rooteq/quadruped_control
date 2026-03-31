@@ -10,6 +10,7 @@
 #include <pinocchio/algorithm/jacobian.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
 
 namespace quadro
 {
@@ -65,6 +66,9 @@ public:
     /// Hip joint position in body frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
 
+    /// Gravity compensation torques in canonical (JointIdx) order
+    const Eigen::VectorXd& gravityCompensation() const { return gravity_canonical_; }
+
     const pinocchio::Model& pinocchioModel() const { return model_; }
     const pinocchio::Data& pinocchioData() const { return data_; }
 
@@ -83,6 +87,9 @@ private:
 
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, 12> canonical_to_pin_;
+
+    // Gravity compensation in canonical order (remapped from Pinocchio)
+    Eigen::VectorXd gravity_canonical_;
 
     // Cached frame IDs (set once in constructor)
     std::array<pinocchio::FrameIndex, NUM_LEGS> foot_frame_ids_;

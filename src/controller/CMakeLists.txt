@@ -4,6 +4,7 @@ add_library(controller STATIC
     src/inverse_kinematics.cpp
     src/model.cpp
     src/trajectory_generator.cpp
+    src/dynamic_controller.cpp
     )
 
 find_package(Eigen3 REQUIRED)
