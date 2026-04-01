@@ -139,6 +139,7 @@ private:
         controller_.setDesiredVelocity(
             Eigen::Vector3d(msg->linear.x, msg->linear.y, msg->linear.z),
             Eigen::Vector3d(msg->angular.x, msg->angular.y, msg->angular.z));
+        controller_.calculateDesiredBodyTrajectory();
     }
 
     // How will it destinguish between stance / swing joints - the desired torques should be returned by calculate control, but there,
@@ -159,6 +160,8 @@ private:
 
     void mpcCallback()
     {
+        controller_.calculateDesiredBodyTrajectory();
+        controller_.calculateDynamicsMatrices();
         // Will contain:
         //   1. Build reference trajectory from cmd_vel
         //   2. Build Ac, Bc dynamics matrices

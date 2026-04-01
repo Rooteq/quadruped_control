@@ -9,6 +9,7 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/jacobian.hpp>
 #include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/crba.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
 
 namespace quadro
@@ -65,16 +66,22 @@ public:
     /// Hip joint position in body frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
 
-    /// Update base state from odometry.
+    /// Update base state from odometry. Populates the 13-state vector:
+    /// x = [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     void updateBaseState(const Eigen::Vector3d& position,
                          const Eigen::Quaterniond& orientation,
                          const Eigen::Vector3d& linear_velocity,
                          const Eigen::Vector3d& angular_velocity);
 
-    const Eigen::Vector3d&    basePosition()        const { return base_position_; }
-    const Eigen::Quaterniond& baseOrientation()     const { return base_orientation_; }
-    const Eigen::Vector3d&    baseLinearVelocity()  const { return base_linear_vel_; }
-    const Eigen::Vector3d&    baseAngularVelocity() const { return base_angular_vel_; }
+    const Eigen::Matrix<double, 13, 1>& stateVector() const { return x; }
+
+    /// Total robot mass (cached at construction from URDF)
+    double mass() const { return total_mass_; }
+
+    /// Composite inertia tensor of the whole robot about its COM,
+    /// expressed in the world frame at neutral config (cached at construction).
+    /// Used as _BI in the MPC rigid-body model (eq. 14-15 in the paper).
+    const Eigen::Matrix3d& bodyInertia() const { return body_inertia_; }
 
     const pinocchio::Model& pinocchioModel() const { return model_; }
     pinocchio::Data& pinocchioData() { return data_; }
@@ -93,12 +100,6 @@ private:
     Eigen::VectorXd q_pin_;
     Eigen::VectorXd dq_pin_;
 
-    // Base state (from odometry)
-    Eigen::Vector3d    base_position_    = Eigen::Vector3d::Zero();
-    Eigen::Quaterniond base_orientation_ = Eigen::Quaterniond::Identity();
-    Eigen::Vector3d    base_linear_vel_  = Eigen::Vector3d::Zero();
-    Eigen::Vector3d    base_angular_vel_ = Eigen::Vector3d::Zero();
-
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, 12> canonical_to_pin_;
 
@@ -106,7 +107,15 @@ private:
     std::array<pinocchio::FrameIndex, NUM_LEGS> foot_frame_ids_;
     std::array<pinocchio::FrameIndex, NUM_LEGS> hip_frame_ids_;
 
+    // Cached physical parameters (computed once in constructor)
+    double total_mass_ = 0.0;
+    Eigen::Matrix3d body_inertia_ = Eigen::Matrix3d::Zero();
 
+    Eigen::Matrix<double, 13, 13> Ac;
+    Eigen::Matrix<double, 13, 12> Bc;
+    Eigen::Matrix<double, 13, 1> x;
+
+    double g = 9.81;
 
 };
     
