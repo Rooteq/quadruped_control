@@ -65,9 +65,25 @@ public:
         return lp / gait_.duty_cycle;
     }
 
-    // TODO: contactTable(int horizon_steps, double mpc_dt) for MPC
-    // Returns std::array<std::array<bool, NUM_LEGS>, N> by simulating
-    // phase forward: future_phase = fmod(phase_ + k * mpc_dt / period_, 1.0)
+    /// Contact schedule over a prediction horizon.
+    /// contact_table[k][leg] = true if leg is in stance at horizon step k.
+    /// Simulates the gait phase forward without mutating scheduler state.
+    template<int N>
+    std::array<std::array<bool, NUM_LEGS>, N> contactTable(double mpc_dt) const
+    {
+        std::array<std::array<bool, NUM_LEGS>, N> table{};
+        for (int k = 0; k < N; ++k)
+        {
+            double phase_offset_k = k * mpc_dt / gait_.period;
+            for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
+            {
+                double future_phase = std::fmod(
+                    phase_ + gait_.phase_offsets[leg] + phase_offset_k, 1.0);
+                table[k][leg] = (future_phase < gait_.duty_cycle);
+            }
+        }
+        return table;
+    }
 
     double phase() const { return phase_; }
     const GaitDefinition& gait() const { return gait_; }

@@ -139,7 +139,6 @@ private:
         controller_.setDesiredVelocity(
             Eigen::Vector3d(msg->linear.x, msg->linear.y, msg->linear.z),
             Eigen::Vector3d(msg->angular.x, msg->angular.y, msg->angular.z));
-        controller_.calculateDesiredBodyTrajectory();
     }
 
     // How will it destinguish between stance / swing joints - the desired torques should be returned by calculate control, but there,
@@ -152,8 +151,15 @@ private:
             if (!joint_snap_.valid) return;
         }
 
+        std::array<Eigen::Vector3d, quadro::NUM_LEGS> grfs;
+        {
+            std::lock_guard<std::mutex> lock(grf_mutex_);
+            grfs = controller_.groundReactionForces();
+        }
+
         // Returns desired joint positions in canonical (JointIdx) order.
         // publishJointCommand remaps to sim order.
+        // TODO: pass grfs to calculateControl() once torque computation is implemented
         auto cmd = controller_.calculateControl();
         publishJointCommand(cmd);
     }
@@ -161,14 +167,15 @@ private:
     void mpcCallback()
     {
         controller_.calculateDesiredBodyTrajectory();
+
+        controller_.updateMPC();
+
         controller_.calculateDynamicsMatrices();
-        // Will contain:
-        //   1. Build reference trajectory from cmd_vel
-        //   2. Build Ac, Bc dynamics matrices
-        //   3. Discretize (ZOH)
-        //   4. Form condensed QP (H, g, C)
-        //   5. Solve QP
-        //   6. Store GRFs for controlCallback
+
+        {
+            std::lock_guard<std::mutex> lock(grf_mutex_);
+            controller_.runMPC();   // solves QP, writes grfs_
+        }
     }
 
     void planningCallback()
@@ -242,6 +249,8 @@ private:
 
     // ── State (mutex-protected, written by subscribers) ──────────
     std::mutex state_mutex_;
+    std::mutex grf_mutex_; // ground reaction forces mutex
+
     JointSnapshot joint_snap_;
 
     // ── Joint mapping ────────────────────────────────────────────

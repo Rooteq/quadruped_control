@@ -10,19 +10,13 @@
 #include "model.hpp"
 #include "trajectory_generator.hpp"
 #include "gait_scheduler.hpp"
+#include "mpc.hpp"
 
 namespace quadro
 {
 
 
 
-
-// ── MPC horizon ──────────────────────────────────────────────────────────────
-// Both the reference trajectory and the dynamics matrices array are sized by
-// this constant — they must always match.
-static constexpr int    HORIZON_STEPS = 10;     // number of MPC timesteps
-static constexpr double MPC_DT        = 0.033;  // seconds per step (~30 Hz)
-// Total prediction window: HORIZON_STEPS × MPC_DT = 0.33 s
 
 class Controller
 {
@@ -57,9 +51,24 @@ public:
         return desired_joint_positions_;
     }
 
+    void updateMPC()
+    {
+        mpc_.update(quadro_model_, desired_angular_vel_, desired_linear_vel_, x_ref_, gait_scheduler_);
+    }
+
+    /// Run MPC solve and copy resulting GRFs into grfs_.
+    /// Caller must hold grf_mutex_ around this call.
+    void runMPC()
+    {
+        mpc_.run();
+        grfs_ = mpc_.groundReactionForces();
+    }
+
+    const std::array<Eigen::Vector3d, NUM_LEGS>& groundReactionForces() const { return grfs_; }
+
     void calculateDynamicsMatrices() // calculate matrices etc
     {
-        
+        mpc_.calculateDynamicsMatrices();
     }
 
     void calculateDesiredBodyTrajectory()
@@ -95,6 +104,7 @@ public:
 
 public:
     QuadroModel quadro_model_;
+    MPC mpc_;
 
 private:
 
@@ -110,6 +120,9 @@ private:
     // Reference trajectory — HORIZON_STEPS × 13-state vectors
     // x_ref_[n] = desired state at prediction step n
     std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS> x_ref_{};
+
+    // Ground reaction forces
+    std::array<Eigen::Vector3d, NUM_LEGS> grfs_{};
 };
 
 } // namespace quadro
