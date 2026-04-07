@@ -84,6 +84,65 @@ private:
         Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()
     };
 
+    // ── QP dimensions ─────────────────────────────────────────────
+    static constexpr int N_STATE = 13;
+    static constexpr int N_FORCE = static_cast<int>(NUM_LEGS) * 3;          // 12
+    static constexpr int N_VAR   = N_FORCE * HORIZON_STEPS;                 // 120
+    static constexpr int N_PRED  = N_STATE * HORIZON_STEPS;                 // 130
+    static constexpr int N_CON   = 4 * static_cast<int>(NUM_LEGS) * HORIZON_STEPS; // 160
+
+    // ── Tuning parameters ─────────────────────────────────────────
+    static constexpr double mu_     = 0.6;    // friction coefficient
+    static constexpr double fz_min_ = 10.0;   // min normal GRF [N]
+    static constexpr double fz_max_ = 666.0;  // max normal GRF [N]
+    static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
+
+    // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
+    static constexpr double Q_WEIGHTS[N_STATE] = {
+        1.0, 1.0,  1.0,   // roll, pitch, yaw
+        0.0, 0.0, 50.0,   // px, py, pz
+        0.0, 0.0,  1.0,   // wx, wy, wz
+        1.0, 1.0,  0.0,   // vx, vy, vz
+        0.0                // -g (don't penalise constant)
+    };
+
+    // ── Pre-allocated QP matrices ──────────────────────────────────
+    // Condensed system: X = Aqp*x0 + Bqp*U
+    Eigen::Matrix<double, N_PRED, N_STATE>  Aqp_     = Eigen::Matrix<double, N_PRED, N_STATE>::Zero();
+    Eigen::Matrix<double, N_PRED, N_VAR>    Bqp_     = Eigen::Matrix<double, N_PRED, N_VAR>::Zero();
+
+    // Diagonal of the block-diagonal state cost matrix L (N_PRED entries)
+    Eigen::Matrix<double, N_PRED, 1>        L_diag_  = Eigen::Matrix<double, N_PRED, 1>::Zero();
+
+    // Stacked reference: X_ref = [x_ref[0]; ...; x_ref[k-1]]
+    Eigen::Matrix<double, N_PRED, 1>        X_ref_qp_ = Eigen::Matrix<double, N_PRED, 1>::Zero();
+
+    // QP cost: ½UᵀHU + gᵀU
+    Eigen::Matrix<double, N_VAR, N_VAR>     H_       = Eigen::Matrix<double, N_VAR, N_VAR>::Zero();
+    Eigen::Matrix<double, N_VAR, 1>         g_qp_    = Eigen::Matrix<double, N_VAR, 1>::Zero();
+
+    // Friction-pyramid constraint matrix and bounds: lbC <= C*U <= ubC
+    // N_CON×N_VAR = 160×120 = 153 KB — exceeds Eigen's fixed-size stack limit,
+    // so stored as dynamic matrices (heap allocated at construction).
+    Eigen::MatrixXd C_   = Eigen::MatrixXd::Zero(N_CON, N_VAR);
+    Eigen::Matrix<double, N_CON, 1>         lbC_     = Eigen::Matrix<double, N_CON, 1>::Zero();
+    Eigen::Matrix<double, N_CON, 1>         ubC_     = Eigen::Matrix<double, N_CON, 1>::Zero();
+
+    // Per-variable bounds (stance: fz in [fz_min, fz_max]; swing: lb=ub=0)
+    Eigen::Matrix<double, N_VAR, 1>         lb_      = Eigen::Matrix<double, N_VAR, 1>::Zero();
+    Eigen::Matrix<double, N_VAR, 1>         ub_      = Eigen::Matrix<double, N_VAR, 1>::Zero();
+
+    // Row-major copies required by qpOASES (which expects C-order arrays).
+    // H_qp_ is fine fixed-size (115 KB); C_qp_ also dynamic for the same reason as C_.
+    Eigen::Matrix<double, N_VAR, N_VAR, Eigen::RowMajor> H_qp_;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+        C_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Zero(N_CON, N_VAR);
+
+    // ── qpOASES solver ────────────────────────────────────────────
+    // H and A change every MPC step (Bqp / contact schedule), so init() is
+    // called each cycle. qpOASES resets internally on each init() call.
+    qpOASES::QProblem qp_{N_VAR, N_CON, qpOASES::HST_POSDEF};
+
     static Eigen::Matrix3d skewSymmetric(const Eigen::Vector3d& v);
 
     static constexpr double g_ = 9.81;
