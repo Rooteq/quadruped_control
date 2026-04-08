@@ -11,6 +11,8 @@
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/crba.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
+
 
 namespace quadro
 {
@@ -59,9 +61,15 @@ public:
     const Eigen::VectorXd& jointPositions() const { return q_; }
     const Eigen::VectorXd& jointVelocities() const { return dq_; }
     const Eigen::VectorXd& jointEfforts() const { return effort_; }
+    const Eigen::VectorXd& gravityCompensation() const { return gravity_canonical_; }
 
     /// Foot position in body frame (from Pinocchio FK, updated by updateState)
     Eigen::Vector3d footPosition(int leg_idx) const;
+
+    /// 3×12 linear Jacobian of foot leg_idx in the base frame, canonical joint order.
+    /// Maps dq (canonical) to foot linear velocity in base frame: v_foot = J * dq.
+    /// Requires updateState() to have been called (uses cached Jacobians).
+    Eigen::Matrix<double, 3, 12> footJacobianLinear(int leg_idx) const;
 
     /// Hip joint position in body frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
@@ -100,6 +108,8 @@ private:
     Eigen::VectorXd q_pin_;
     Eigen::VectorXd dq_pin_;
 
+    Eigen::VectorXd gravity_canonical_;
+
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, 12> canonical_to_pin_;
 
@@ -110,6 +120,7 @@ private:
     // Cached physical parameters (computed once in constructor)
     double total_mass_ = 0.0;
     Eigen::Matrix3d body_inertia_ = Eigen::Matrix3d::Zero();
+
 
     Eigen::Matrix<double, 13, 13> Ac;
     Eigen::Matrix<double, 13, 12> Bc;

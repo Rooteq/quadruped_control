@@ -5,6 +5,7 @@ add_library(controller STATIC
     src/model.cpp
     src/trajectory_generator.cpp
     src/mpc.cpp
+    src/dynamic_controller.cpp
     )
 
 find_package(Eigen3 REQUIRED)

@@ -11,6 +11,7 @@
 #include "trajectory_generator.hpp"
 #include "gait_scheduler.hpp"
 #include "mpc.hpp"
+#include "dynamic_controller.hpp"
 
 namespace quadro
 {
@@ -45,10 +46,10 @@ public:
             quadro_model_, gait_scheduler_, desired_linear_vel_, desired_angular_vel_);
     }
 
-    /// Return desired joint positions in canonical (JointIdx) order.
+    // / Return desired joint efforts in canonical (JointIdx) order.
     std::array<double, NUM_JOINTS> calculateControl()
     {
-        return desired_joint_positions_;
+        return dynamic_controller_.computeTorques(quadro_model_, gait_scheduler_, desired_joint_positions_, grfs_);
     }
 
     void updateMPC()
@@ -105,6 +106,7 @@ public:
 public:
     QuadroModel quadro_model_;
     MPC mpc_;
+    DynamicController dynamic_controller_;
 
 private:
 

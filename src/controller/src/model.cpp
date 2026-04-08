@@ -125,6 +125,15 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
     pinocchio::crba(model_,data_,q_pin_);
+    pinocchio::computeGeneralizedGravity(model_, data_, q_pin_);
+    pinocchio::centerOfMass(model_, data_, q_pin_);
+
+    // Remap gravity torques from Pinocchio order → canonical order
+    gravity_canonical_.resize(NUM_JOINTS);
+    for (size_t i = 0; i < NUM_JOINTS; ++i)
+    {
+        gravity_canonical_[i] = data_.g[canonical_to_pin_[i]];
+    }
     // pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 
 }
@@ -154,6 +163,23 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const
 {
     return data_.oMf[foot_frame_ids_[leg_idx]].translation();
+}
+
+Eigen::Matrix<double, 3, 12> QuadroModel::footJacobianLinear(int leg_idx) const
+{
+    // Full 6×nv frame Jacobian (linear rows on top) in LOCAL_WORLD_ALIGNED mode,
+    // meaning foot velocities are expressed in the base/world frame of the fixed-base model.
+    Eigen::MatrixXd J_full = Eigen::MatrixXd::Zero(6, model_.nv);
+    pinocchio::getFrameJacobian(model_, const_cast<pinocchio::Data&>(data_),
+                                foot_frame_ids_[leg_idx],
+                                pinocchio::LOCAL_WORLD_ALIGNED, J_full);
+
+    // Extract linear part (rows 0-2) and remap Pinocchio column order → canonical order
+    Eigen::Matrix<double, 3, 12> J;
+    for (size_t i = 0; i < NUM_JOINTS; ++i)
+        J.col(i) = J_full.block<3, 1>(0, canonical_to_pin_[i]);
+
+    return J;
 }
 
 // Robot's model should include frames in the hip position, now manually calculated hip location is used

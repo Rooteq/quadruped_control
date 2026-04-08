@@ -225,7 +225,7 @@ private:
         }
     }
 
-    void publishJointCommand(const std::array<double, quadro::NUM_JOINTS>& positions)
+    void publishJointCommand(const std::array<double, quadro::NUM_JOINTS>& effort)
     {
         if (!joint_map_ready_) return;
 
@@ -238,7 +238,7 @@ private:
 
         // Map internal order back to sim order
         for (size_t i = 0; i < quadro::NUM_JOINTS; ++i) {
-            msg.position[internal_to_sim_[i]] = positions[i];
+            msg.effort[internal_to_sim_[i]] = effort[i];
         }
 
         pub_joint_cmd_->publish(msg);

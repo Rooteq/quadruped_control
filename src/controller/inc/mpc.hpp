@@ -93,7 +93,7 @@ private:
 
     // ── Tuning parameters ─────────────────────────────────────────
     static constexpr double mu_     = 0.6;    // friction coefficient
-    static constexpr double fz_min_ = 10.0;   // min normal GRF [N]
+    static constexpr double fz_min_ = 1.0;   // min normal GRF [N]
     static constexpr double fz_max_ = 666.0;  // max normal GRF [N]
     static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
 
