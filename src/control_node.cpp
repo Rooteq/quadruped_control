@@ -263,7 +263,8 @@ private:
     // ── ROS interfaces ───────────────────────────────────────────
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_joint_states_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_cmd_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
+    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_cmd_;
     rclcpp::TimerBase::SharedPtr control_timer_;   // 300 Hz
     rclcpp::TimerBase::SharedPtr mpc_timer_;        // 30 Hz
     rclcpp::TimerBase::SharedPtr planning_timer_;   // 30 Hz

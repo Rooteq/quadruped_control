@@ -695,6 +695,8 @@
     <hardware>
       <plugin>mujoco_ros2_control/MujocoSystemInterface</plugin>
       <param name="mujoco_model">$(find quadruped_control)/description/robot.xml</param>
+      <param name="odom_free_joint_name">back_plate_freejoint</param>
+      <param name="odom_topic">/odom</param>
     </hardware>
     <joint name="fl_m1_s1">
       <command_interface name="effort"/>

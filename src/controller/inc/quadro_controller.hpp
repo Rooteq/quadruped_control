@@ -78,7 +78,7 @@ public:
     /// Compute joint torques in canonical (JointIdx) order.
     std::array<double, NUM_JOINTS> calculateControl()
     {
-        return dynamic_controller_.computeTorques(quadro_model_, gait_scheduler_, desired_joint_positions_, grfs_);
+        return dynamic_controller_.computeTorques(quadro_model_, gait_scheduler_, leg_targets_, grfs_);
     }
 
     void updateMPC()
@@ -145,7 +145,6 @@ private:
     double planning_dt_ = 0.033;
     TrajectoryGenerator trajectory_generator_;
     GaitScheduler gait_scheduler_;
-    DynamicController dynamic_controller_;
 
     std::array<LegTarget, NUM_LEGS> leg_targets_{};
     std::array<LegTarget, NUM_LEGS> leg_targets_for_stand_{};

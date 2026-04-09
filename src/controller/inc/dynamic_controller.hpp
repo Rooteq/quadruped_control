@@ -21,11 +21,12 @@ public:
         const QuadroModel& model,
         const std::array<LegTarget, NUM_LEGS>& leg_targets);
 
-    /// Swing/walk controller — lower-gain Cartesian PD + J^T + gravity.
+    /// Swing/walk controller — Cartesian PD swing + J^T GRF stance + gravity.
     std::array<double, NUM_JOINTS> computeTorques(
         const QuadroModel& model,
         const GaitScheduler& gait,
-        const std::array<LegTarget, NUM_LEGS>& leg_targets);
+        const std::array<LegTarget, NUM_LEGS>& leg_targets,
+        const std::array<Eigen::Vector3d, NUM_LEGS>& grfs);
 
 private:
     // Stand: high gains needed to lift the robot against gravity
