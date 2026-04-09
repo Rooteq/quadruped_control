@@ -1,0 +1,28 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 200
+
+
+joint_state_broadcaster:
+  ros__parameters:
+    update_rate: 200
+    type: joint_state_broadcaster/JointStateBroadcaster
+
+forward_effort_controller:
+  ros__parameters:
+    type: forward_command_controller/ForwardCommandController
+    joints:
+      - fl_m1_s1
+      - fl_m2_s2
+      - fl_l4_l3
+      - fr_m1_s1
+      - fr_m2_s2
+      - fr_l4_l3
+      - bl_m1_s1
+      - bl_m2_s2
+      - bl_l4_l3
+      - br_m1_s1
+      - br_m2_s2
+      - br_l4_l3
+
+    interface_name: effort

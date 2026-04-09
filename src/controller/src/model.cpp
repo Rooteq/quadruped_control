@@ -74,6 +74,11 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
             }
             pinocchio::JointIndex jid = model_.getJointId(name);
             canonical_to_pin_[i] = model_.idx_qs[jid];
+
+            // Build per-leg v-index lookup for Jacobian column extraction
+            size_t leg = i / JOINTS_PER_LEG;
+            size_t j   = i % JOINTS_PER_LEG;
+            leg_pin_v_cols_[leg][j] = model_.idx_vs[jid];
         }
 
         // Cache foot and hip frame IDs (order: FL, FR, BL, BR)
@@ -163,6 +168,28 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const
 {
     return data_.oMf[foot_frame_ids_[leg_idx]].translation();
+}
+
+Eigen::Vector3d QuadroModel::footVelocity(int leg_idx) const
+{
+    return pinocchio::getFrameVelocity(
+        model_, data_, foot_frame_ids_[leg_idx],
+        pinocchio::LOCAL_WORLD_ALIGNED).linear();
+}
+
+Eigen::Matrix3d QuadroModel::footJacobian(int leg_idx) const
+{
+    // Full 6×nv frame Jacobian in world-aligned frame
+    pinocchio::Data::Matrix6x J6 = pinocchio::Data::Matrix6x::Zero(6, model_.nv);
+    pinocchio::getFrameJacobian(model_, data_, foot_frame_ids_[leg_idx],
+                                pinocchio::LOCAL_WORLD_ALIGNED, J6);
+
+    // Extract 3×3 linear block (rows 0-2) for the 3 joints of this leg
+    Eigen::Matrix3d J;
+    for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
+        J.col(j) = J6.block<3, 1>(0, leg_pin_v_cols_[leg_idx][j]);
+
+    return J;
 }
 
 Eigen::Matrix<double, 3, 12> QuadroModel::footJacobianLinear(int leg_idx) const

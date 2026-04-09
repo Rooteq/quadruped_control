@@ -8,10 +8,8 @@ Panels:
         - /Status1
         - /TF1
         - /RobotModel1
-        - /RobotModel1/Links1
-        - /RobotModel1/Links1/shaft_21
       Splitter Ratio: 0.5
-    Tree Height: 999
+    Tree Height: 693
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -58,17 +56,47 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        back_plate:
+          Value: true
+        feet:
+          Value: true
+        feet_2:
+          Value: true
+        feet_3:
+          Value: true
+        feet_4:
+          Value: true
         l4_l:
+          Value: true
+        l4_l_2:
+          Value: true
+        l4_r:
+          Value: true
+        l4_r_2:
           Value: true
         motor:
           Value: true
+        motor_2:
+          Value: true
         shaft:
+          Value: true
+        shaft_10:
           Value: true
         shaft_2:
           Value: true
         shaft_3:
           Value: true
-        world:
+        shaft_4:
+          Value: true
+        shaft_5:
+          Value: true
+        shaft_6:
+          Value: true
+        shaft_7:
+          Value: true
+        shaft_8:
+          Value: true
+        shaft_9:
           Value: true
       Marker Scale: 0.5
       Name: TF
@@ -76,14 +104,35 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        world:
+        back_plate:
           motor:
-            shaft:
-              shaft_2:
-                l4_l:
+            motor_2:
+              l4_l_2:
+                feet_4:
                   {}
-                shaft_3:
+              shaft_10:
+                {}
+          shaft:
+            shaft_2:
+              l4_r:
+                feet:
                   {}
+              shaft_3:
+                {}
+          shaft_4:
+            shaft_5:
+              l4_l:
+                feet_2:
+                  {}
+              shaft_6:
+                {}
+          shaft_7:
+            shaft_8:
+              l4_r_2:
+                feet_3:
+                  {}
+              shaft_9:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -104,7 +153,47 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        back_plate:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        feet:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        feet_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        feet_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        feet_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         l4_l:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l4_l_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l4_r:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l4_r_2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -114,13 +203,23 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        motor_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         shaft:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        shaft_10:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         shaft_2:
-          Alpha: 0.5
+          Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
@@ -129,10 +228,36 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        world:
+        shaft_4:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
+        shaft_5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shaft_6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shaft_7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shaft_8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        shaft_9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -144,7 +269,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Fixed Frame: back_plate
     Frame Rate: 30
   Name: root
   Tools:
@@ -187,7 +312,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.4564911425113678
+      Distance: 1.1302553415298462
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -202,18 +327,18 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2853986620903015
+      Pitch: 0.2203986942768097
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.8335270881652832
+      Yaw: 5.701697826385498
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1358
+  Height: 1052
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a0000048bfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000007901000003fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004c0000048b000000fd01000003fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000001100000048bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004c0000048b000000d301000003fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a000000004ffc0100000002fb0000000800540069006d0065010000000000000a000000026501000003fb0000000800540069006d00650100000000000004500000000000000000000007840000048b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000359fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000007901000003fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004c00000359000000fd01000003fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000011000000359fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000004c00000359000000d301000003fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000004ffc0100000002fb0000000800540069006d00650100000000000007800000026501000003fb0000000800540069006d00650100000000000004500000000000000000000005040000035900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -222,6 +347,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 2560
-  X: 1920
-  Y: 0
+  Width: 1920
+  X: 0
+  Y: 360
