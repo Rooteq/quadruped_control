@@ -2,5 +2,7 @@ build
 log
 install
 description/assets
+description/isaac_assets
+description/mujoco_assets
 .vscode
 *.md

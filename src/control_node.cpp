@@ -10,6 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "std_msgs/msg/float64_multi_array.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -61,8 +62,8 @@ public:
             std::bind(&QuadroController::cmdVelCallback, this, std::placeholders::_1));
 
 
-        pub_joint_cmd_ = this->create_publisher<sensor_msgs::msg::JointState>(
-            "/joint_command", 10);
+        pub_joint_cmd_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
+            "/forward_effort_controller/commands", 10);
 
 
         control_timer_ = this->create_wall_timer(
@@ -110,8 +111,9 @@ private:
 
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
+        // Robot body frame: x=lateral, y=forward — swap from ROS cmd_vel convention
         controller_.setDesiredVelocity(
-            Eigen::Vector3d(msg->linear.x, msg->linear.y, msg->linear.z),
+            Eigen::Vector3d(msg->linear.y, msg->linear.x, msg->linear.z),
             Eigen::Vector3d(msg->angular.x, msg->angular.y, msg->angular.z));
     }
 
@@ -127,7 +129,12 @@ private:
 
         // Returns desired joint positions in canonical (JointIdx) order.
         // publishJointCommand remaps to sim order.
-        auto cmd = controller_.calculateControl();
+        std::array<double, quadro::NUM_JOINTS> cmd = {};
+        if (!controller_.isStandingComplete())
+            cmd = controller_.calculateStand(this->get_clock()->now().seconds());
+        else
+            cmd = controller_.calculateControl();
+
         publishJointCommand(cmd);
     }
 
@@ -193,16 +200,12 @@ private:
     {
         if (!joint_map_ready_) return;
 
-        sensor_msgs::msg::JointState msg;
-        msg.header.stamp = this->now();
-        msg.name = sim_joint_names_;
-        msg.position.resize(sim_joint_names_.size(), 0.0);
-        msg.velocity.resize(sim_joint_names_.size(), 0.0);
-        msg.effort.resize(sim_joint_names_.size(), 0.0);
+        std_msgs::msg::Float64MultiArray msg;
+        msg.data.resize(quadro::NUM_JOINTS, 0.0);
 
-        // Map internal order back to sim order
+        // Internal canonical order matches controllers.yaml order — direct mapping
         for (size_t i = 0; i < quadro::NUM_JOINTS; ++i) {
-            msg.effort[internal_to_sim_[i]] = effort[i];
+            msg.data[i] = effort[i];
         }
 
         pub_joint_cmd_->publish(msg);
@@ -223,7 +226,7 @@ private:
     // ── ROS interfaces ───────────────────────────────────────────
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_joint_states_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_cmd_;
+    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_cmd_;
     rclcpp::TimerBase::SharedPtr control_timer_;   // 300 Hz
     rclcpp::TimerBase::SharedPtr mpc_timer_;        // 30 Hz
     rclcpp::TimerBase::SharedPtr planning_timer_;   // 30 Hz

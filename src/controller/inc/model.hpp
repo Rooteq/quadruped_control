@@ -60,10 +60,16 @@ public:
     const Eigen::VectorXd& jointVelocities() const { return dq_; }
     const Eigen::VectorXd& jointEfforts() const { return effort_; }
 
-    /// Foot position in body frame (from Pinocchio FK, updated by updateState)
+    /// Foot position in world frame (from Pinocchio FK, updated by updateState)
     Eigen::Vector3d footPosition(int leg_idx) const;
 
-    /// Hip joint position in body frame
+    /// Foot linear velocity in world frame (from Pinocchio FK, updated by updateState)
+    Eigen::Vector3d footVelocity(int leg_idx) const;
+
+    /// 3×3 foot Jacobian: linear velocity in world frame, columns = leg's 3 joints only
+    Eigen::Matrix3d footJacobian(int leg_idx) const;
+
+    /// Hip joint position in world frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
 
     /// Gravity compensation torques in canonical (JointIdx) order
@@ -74,7 +80,7 @@ public:
 
 private:
     pinocchio::Model model_;
-    pinocchio::Data data_;
+    mutable pinocchio::Data data_;
 
     // Joint state in canonical (JointIdx) order
     Eigen::VectorXd q_;
@@ -86,7 +92,9 @@ private:
     Eigen::VectorXd dq_pin_;
 
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
-    std::array<int, 12> canonical_to_pin_;
+    std::array<int, NUM_JOINTS> canonical_to_pin_{};
+    // leg_pin_v_cols_[leg][j] = Pinocchio's v-index for the j-th joint of leg
+    std::array<std::array<int, JOINTS_PER_LEG>, NUM_LEGS> leg_pin_v_cols_{};
 
     // Gravity compensation in canonical order (remapped from Pinocchio)
     Eigen::VectorXd gravity_canonical_;

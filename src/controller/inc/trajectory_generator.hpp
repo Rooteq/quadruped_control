@@ -4,7 +4,6 @@
 #include <cmath>
 #include <eigen3/Eigen/Dense>
 
-#include "inverse_kinematics.hpp"
 #include "gait_scheduler.hpp"
 
 namespace quadro
@@ -13,29 +12,40 @@ namespace quadro
 // Forward declaration — full definition in model.hpp, included by .cpp
 class QuadroModel;
 
+struct LegTarget {
+    Eigen::Vector3d foot_pos = Eigen::Vector3d::Zero();  // world frame
+    Eigen::Vector3d foot_vel = Eigen::Vector3d::Zero();  // world frame
+};
+
 struct SwingState {
     Eigen::Vector3d liftoff_pos = Eigen::Vector3d::Zero();  // body frame
     Eigen::Vector3d landing_pos = Eigen::Vector3d::Zero();  // body frame
     double apex_height = 0.05;  // meters above liftoff/landing z
     bool active = false;
     bool stance_initialized = false;
-    std::array<double, JOINTS_PER_LEG> stance_joints{};  // fixed joint angles held during stance
-    Eigen::Vector3d stance_foot_pos = Eigen::Vector3d::Zero();  // current stance foot target (drifts with fake walk)
+    Eigen::Vector3d stance_foot_pos = Eigen::Vector3d::Zero();  // foot target held during stance
 };
 
 class TrajectoryGenerator
 {
 public:
     TrajectoryGenerator() = default;
-    explicit TrajectoryGenerator(double dt) : dt_(dt) {}
+    explicit TrajectoryGenerator(double dt);
 
-    /// Generate desired joint positions in canonical (JointIdx) order.
-    /// Only computes swing leg targets; stance legs hold current position.
-    std::array<double, 12> generate(
+    /// Generate desired foot Cartesian targets for all legs.
+    /// Swing legs track Bezier arc; stance legs hold last landing position.
+    std::array<LegTarget, NUM_LEGS> generate(
         const QuadroModel& model,
         const GaitScheduler& gait,
         const Eigen::Vector3d& desired_linear_vel,
         const Eigen::Vector3d& desired_angular_vel);
+
+    static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
+
+    Eigen::Vector3d nominalFootPosition(int leg) const
+    {
+        return {hipPos[leg].x(), hipPos[leg].y(), NOMINAL_HEIGHT};
+    }
 
 private:
     /// Raibert foot placement heuristic (body frame)
@@ -48,15 +58,14 @@ private:
     /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;
 
-    /// [TEMPORARY] Fake walking: drift stance feet opposite to velocity each tick.
-    /// Remove once MPC produces real ground reaction forces.
-    void fakeStanceWalk(int leg_idx, const Eigen::Vector3d& desired_linear_vel);
+    /// Analytical time-derivative of evaluateSwing
+    Eigen::Vector3d evaluateSwingVelocity(const SwingState& state, double phase,
+                                          double phase_rate) const;
 
-    static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
+    std::array<SwingState, NUM_LEGS> swing_states_;
+
 
     double dt_ = 0.033;
-    InverseKinematics ik;
-    std::array<SwingState, NUM_LEGS> swing_states_;
 
     Eigen::Vector3d hipPos[NUM_LEGS] = {
                     {0.112, -0.188, 0.0},
