@@ -74,7 +74,10 @@ public:
         std::array<std::array<bool, NUM_LEGS>, N> table{};
         for (int k = 0; k < N; ++k)
         {
-            double phase_offset_k = k * mpc_dt / gait_.period;
+            // Evaluate phase at the middle of the MPC step to be robust to edge transitions,
+            // exactly like python: t = t0 + np.arange(N)*dt + dt/2
+            double phase_offset_k = (k + 0.5) * mpc_dt / gait_.period;
+            
             for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
             {
                 double future_phase = std::fmod(

@@ -25,30 +25,33 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
 {
     std::array<LegTarget, NUM_LEGS> targets{};
 
+    const Eigen::VectorXd& state = model.stateVector();
+    Eigen::Vector3d base_pos_w(state[3], state[4], state[5]);
+    Eigen::Vector3d base_vel_w(state[9], state[10], state[11]);
+    const Eigen::Matrix3d& R_b_w = model.bodyToWorldRotation();
+
     // Phase rate: how fast swing phase [0,1] advances per second
     const double swing_duration = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
     const double phase_rate = (swing_duration > 1e-6) ? 1.0 / swing_duration : 0.0;
 
     for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
     {
+        // With a FreeFlyer model, pinocchio outputs already give world absolute positions
+        Eigen::Vector3d p_world = model.footPosition(leg);
+        Eigen::Vector3d v_world = model.footVelocity(leg);
+
         if (gait.inStance(leg))
         {
-            // On swing→stance transition, latch landing position
             if (!swing_states_[leg].stance_initialized)
             {
-                swing_states_[leg].stance_foot_pos = swing_states_[leg].landing_pos;
                 swing_states_[leg].stance_initialized = true;
             }
 
             swing_states_[leg].active = false;
 
-            // Drift foot opposite to body velocity (body moves forward → foot slides back)
-            swing_states_[leg].stance_foot_pos.x() -= desired_linear_vel.x() * dt_;
-            swing_states_[leg].stance_foot_pos.y() -= desired_linear_vel.y() * dt_;
-
-            // Desired velocity matches the drift rate so the PD doesn't fight it
-            targets[leg].foot_pos = swing_states_[leg].stance_foot_pos;
-            targets[leg].foot_vel = -desired_linear_vel;
+            // In Stance: Target is where the foot currently is in world.
+            targets[leg].foot_pos = p_world;
+            targets[leg].foot_vel = v_world; // or Vector3d::Zero() since foot is planted
         }
         else
         {
@@ -57,9 +60,10 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
             // On stance→swing transition, initialize arc
             if (!swing_states_[leg].active)
             {
-                swing_states_[leg].liftoff_pos = model.footPosition(leg);
+                swing_states_[leg].liftoff_pos = p_world;
+                // Use ACTUAL body velocity for Raibert heuristic
                 swing_states_[leg].landing_pos = computeLandingPos(
-                    model, gait, leg, desired_linear_vel);
+                    model, gait, leg, base_vel_w);
                 swing_states_[leg].active = true;
             }
 
@@ -73,13 +77,18 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
 }
 
 Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
-    const QuadroModel& /*model*/,
+    const QuadroModel& model,
     const GaitScheduler& gait,
     int leg_idx,
     const Eigen::Vector3d& body_velocity) const
 {
     // Raibert heuristic: land under hip + velocity compensation
-    Eigen::Vector3d hip_ground = hipPos[leg_idx];
+    const Eigen::VectorXd& state = model.stateVector();
+    Eigen::Vector3d base_pos(state[3], state[4], 0.0);
+    Eigen::Matrix3d R_z = model.bodyYawRotation();
+
+    // Rotate hip offset into world and add base position
+    Eigen::Vector3d hip_ground = base_pos + R_z * hipPos[leg_idx];
     hip_ground.z() = NOMINAL_HEIGHT;
 
     double stance_duration = gait.gait().duty_cycle * gait.gait().period;

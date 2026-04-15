@@ -20,7 +20,7 @@ struct LegTarget {
 struct SwingState {
     Eigen::Vector3d liftoff_pos = Eigen::Vector3d::Zero();  // body frame
     Eigen::Vector3d landing_pos = Eigen::Vector3d::Zero();  // body frame
-    double apex_height = 0.05;  // meters above liftoff/landing z
+    double apex_height = 0.10;  // meters above liftoff/landing z
     bool active = false;
     bool stance_initialized = false;
     Eigen::Vector3d stance_foot_pos = Eigen::Vector3d::Zero();  // foot target held during stance

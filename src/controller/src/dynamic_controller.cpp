@@ -39,9 +39,12 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
     std::array<double, NUM_JOINTS> torques{};
 
     const auto& g  = model.gravityCompensation();
-
-    // footJacobian() uses LOCAL_WORLD_ALIGNED, so its columns are already in world frame.
-    // GRFs from MPC are also world frame — no rotation needed (matches Python: J_world.T @ -f).
+    
+    // Convert to world frame since our model generates local coordinates
+    const Eigen::Matrix3d& R_b_w = model.bodyToWorldRotation();
+    const Eigen::VectorXd& state = model.stateVector();
+    Eigen::Vector3d base_pos_w(state[3], state[4], state[5]);
+    Eigen::Vector3d base_vel_w(state[9], state[10], state[11]);
 
     for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
     {
@@ -50,23 +53,25 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
 
         if (gait.inStance(leg))
         {
-            // ── Stance: τ = g(q) − Jᵀ f  (Newton-Euler quasi-static) ─────
+            // ── Stance: τ = Jᵀ f  (Newton-Euler quasi-static) ─────
+            // J is in LOCAL_WORLD_ALIGNED frame (world axes), GRF is in world frame
             const Eigen::Vector3d tau_leg = J.transpose() * grfs[leg];
 
             for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
-                torques[base + j] = g[base + j] - tau_leg[j];
+                torques[base + j] = -tau_leg[j];
         }
         else
         {
             // ── Swing: Cartesian PD + gravity compensation ────────────────
-            Eigen::Vector3d p   = model.footPosition(leg);
-            Eigen::Vector3d v   = model.footVelocity(leg);
+            // With a FreeFlyer model, pinocchio outputs foot kinematics in the world frame
+            Eigen::Vector3d p_world = model.footPosition(leg);
+            Eigen::Vector3d v_world = model.footVelocity(leg);
 
-            Eigen::Vector3d pos_err = leg_targets[leg].foot_pos - p;
-            Eigen::Vector3d vel_err = leg_targets[leg].foot_vel - v;
+            Eigen::Vector3d pos_err_w = leg_targets[leg].foot_pos - p_world;
+            Eigen::Vector3d vel_err_w = leg_targets[leg].foot_vel - v_world;
 
-            Eigen::Vector3d force   = Kp_ * pos_err + Kd_ * vel_err;
-            Eigen::Vector3d tau_leg = J.transpose() * force;
+            Eigen::Vector3d force_w   = Kp_ * pos_err_w + Kd_ * vel_err_w;
+            Eigen::Vector3d tau_leg   = J.transpose() * force_w;
 
             for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
                 torques[base + j] = tau_leg[j] + g[base + j];

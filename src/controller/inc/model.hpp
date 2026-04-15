@@ -94,6 +94,7 @@ public:
     /// Yaw-only rotation matrix R_z(ψ): rotates body-frame vectors to world frame.
     /// Equivalent to go2.R_z in the Python reference. Updated by updateBaseState().
     const Eigen::Matrix3d& bodyYawRotation() const { return R_z_; }
+    const Eigen::Matrix3d& bodyToWorldRotation() const { return R_b_w_; }
 
     const pinocchio::Model& pinocchioModel() const { return model_; }
     pinocchio::Data& pinocchioData() { return data_; }
@@ -116,6 +117,8 @@ private:
 
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, NUM_JOINTS> canonical_to_pin_{};
+    // canonical_to_pin_v_[i] = Pinocchio's v-index for canonical joint i
+    std::array<int, NUM_JOINTS> canonical_to_pin_v_{};
     // leg_pin_v_cols_[leg][j] = Pinocchio's v-index for the j-th joint of leg
     std::array<std::array<int, JOINTS_PER_LEG>, NUM_LEGS> leg_pin_v_cols_{};
 
@@ -127,6 +130,7 @@ private:
     double total_mass_ = 0.0;
     Eigen::Matrix3d body_inertia_ = Eigen::Matrix3d::Zero();
     Eigen::Matrix3d R_z_          = Eigen::Matrix3d::Identity(); // yaw-only body→world rotation
+    Eigen::Matrix3d R_b_w_        = Eigen::Matrix3d::Identity(); // full body→world rotation
 
 
     Eigen::Matrix<double, 13, 13> Ac;

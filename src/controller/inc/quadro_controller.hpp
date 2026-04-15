@@ -57,10 +57,15 @@ public:
         const double alpha = std::min(elapsed / STAND_LOWER_DURATION, 1.0);
         const double z_target = alpha * TrajectoryGenerator::NOMINAL_HEIGHT;
 
+        const auto& x0 = quadro_model_.stateVector();
+        Eigen::Vector3d base_pos(x0[3], x0[4], 0.0);
+        Eigen::Matrix3d R_z = quadro_model_.bodyYawRotation();
+
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
         {
             Eigen::Vector3d nominal = trajectory_generator_.nominalFootPosition(leg);
-            leg_targets_for_stand_[leg].foot_pos = {nominal.x(), nominal.y(), z_target};
+            Eigen::Vector3d target_world = base_pos + R_z * nominal;
+            leg_targets_for_stand_[leg].foot_pos = {target_world.x(), target_world.y(), z_target};
             leg_targets_for_stand_[leg].foot_vel = Eigen::Vector3d::Zero();
         }
 
@@ -107,25 +112,52 @@ public:
         double yaw      = x0[2];
         double yaw_rate = desired_angular_vel_[2];
 
+        // Desired Z height from nominal standing height
+        double z_pos_des_body = -TrajectoryGenerator::NOMINAL_HEIGHT;
+
+        // Initialize anchor on first pass
+        if (!pos_des_initialized_)
+        {
+            pos_des_world_ << x0[3], x0[4], z_pos_des_body;
+            pos_des_initialized_ = true;
+        }
+
+        // Clamp desired XY to within max_pos_error of current XY to prevent windup (spring-like limit)
+        const double max_pos_error = 0.1;
+        if (pos_des_world_[0] - x0[3] > max_pos_error) pos_des_world_[0] = x0[3] + max_pos_error;
+        if (x0[3] - pos_des_world_[0] > max_pos_error) pos_des_world_[0] = x0[3] - max_pos_error;
+
+        if (pos_des_world_[1] - x0[4] > max_pos_error) pos_des_world_[1] = x0[4] + max_pos_error;
+        if (x0[4] - pos_des_world_[1] > max_pos_error) pos_des_world_[1] = x0[4] - max_pos_error;
+
+        // Lock desired Z absolute
+        pos_des_world_[2] = z_pos_des_body;
+
         // Rotate body-frame cmd_vel into world frame using R_z (matches go2.R_z in Python ref)
         const Eigen::Matrix3d& R_z = quadro_model_.bodyYawRotation();
         Eigen::Vector3d vel_world  = R_z * desired_linear_vel_;
         double vx_w = vel_world[0];
         double vy_w = vel_world[1];
 
+        // Advance anchor forward so the "spring" naturally pulls the robot
+        pos_des_world_[0] += vx_w * planning_dt_;
+        pos_des_world_[1] += vy_w * planning_dt_;
+
         for (int i = 0; i < HORIZON_STEPS; ++i)
         {
-            double t = i * MPC_DT;
+            // Python MPC looks at t = (i+1)*dt since it optimizes the END of the interval
+            double t = (i + 1) * MPC_DT;
+            
             x_ref_[i].setZero();
             // roll, pitch = 0 (desired level)
-            x_ref_[i][2]  = yaw + yaw_rate * t;      // yaw integrated forward
-            x_ref_[i][3]  = x0[3] + vx_w * t;        // px
-            x_ref_[i][4]  = x0[4] + vy_w * t;        // py
-            x_ref_[i][5]  = x0[5];                    // pz — track current height
-            x_ref_[i][8]  = yaw_rate;                 // wz
-            x_ref_[i][9]  = vx_w;                     // vx
-            x_ref_[i][10] = vy_w;                     // vy
-            x_ref_[i][12] = x0[12];                   // -g (copied from state)
+            x_ref_[i][2]  = yaw + yaw_rate * t;                // yaw integrated forward
+            x_ref_[i][3]  = pos_des_world_[0] + vx_w * t;      // px anchored to clamped pos_des_world
+            x_ref_[i][4]  = pos_des_world_[1] + vy_w * t;      // py anchored to clamped pos_des_world
+            x_ref_[i][5]  = pos_des_world_[2];                 // pz — absolute constant target height
+            x_ref_[i][8]  = yaw_rate;                          // wz
+            x_ref_[i][9]  = vx_w;                              // vx
+            x_ref_[i][10] = vy_w;                              // vy
+            x_ref_[i][12] = x0[12];                            // -g (copied from state)
         }
     }
 
@@ -142,6 +174,10 @@ private:
 
     Eigen::Vector3d desired_linear_vel_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d desired_angular_vel_ = Eigen::Vector3d::Zero();
+
+    // Track integrated reference trajectory anchor (spring-like limit)
+    Eigen::Vector3d pos_des_world_{};
+    bool pos_des_initialized_ = false;
 
     double planning_dt_ = 0.033;
     TrajectoryGenerator trajectory_generator_;

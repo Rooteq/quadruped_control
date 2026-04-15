@@ -31,11 +31,11 @@ public:
 private:
     // Stand: high gains needed to lift the robot against gravity
     Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(300.0, 300.0, 300.0);
-    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(7.0,  7.0,  7.0);
+    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(15.0,  15.0,  15.0);
 
-    // Walk: lower gains for compliant swing tracking
-    Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(40.0, 40.0, 40.0);
-    Eigen::Matrix3d Kd_ = Eigen::DiagonalMatrix<double,3>(7.5,  7.5,  7.5);
+    // Walk: higher exact PD matching python
+    Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(50.0, 50.0, 50.0);
+    Eigen::Matrix3d Kd_ = Eigen::DiagonalMatrix<double,3>(7.0,  7.0,  7.0);
 };
 
 } // namespace quadro

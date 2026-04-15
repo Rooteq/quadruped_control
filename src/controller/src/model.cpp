@@ -9,7 +9,7 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
 {
     try
     {
-        pinocchio::urdf::buildModel(urdf_path, model_);
+        pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyer(), model_);
         data_ = pinocchio::Data(model_);
 
         q_.resize(model_.nq);
@@ -19,7 +19,7 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
 
         q_pin_.resize(model_.nq);
         dq_pin_.resize(model_.nv);
-        q_pin_.setZero();
+q_pin_ = pinocchio::neutral(model_);
         dq_pin_.setZero();
 
         x.setZero();
@@ -74,6 +74,7 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
             }
             pinocchio::JointIndex jid = model_.getJointId(name);
             canonical_to_pin_[i] = model_.idx_qs[jid];
+            canonical_to_pin_v_[i] = model_.idx_vs[jid];
 
             // Build per-leg v-index lookup for Jacobian column extraction
             size_t leg = i / JOINTS_PER_LEG;
@@ -123,7 +124,7 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     for (size_t i = 0; i < NUM_JOINTS; ++i)
     {
         q_pin_[canonical_to_pin_[i]] = q[i];
-        dq_pin_[canonical_to_pin_[i]] = dq[i];
+        dq_pin_[canonical_to_pin_v_[i]] = dq[i];
     }
 
     pinocchio::forwardKinematics(model_, data_, q_pin_, dq_pin_);
@@ -137,7 +138,7 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     gravity_canonical_.resize(NUM_JOINTS);
     for (size_t i = 0; i < NUM_JOINTS; ++i)
     {
-        gravity_canonical_[i] = data_.g[canonical_to_pin_[i]];
+        gravity_canonical_[i] = data_.g[canonical_to_pin_v_[i]];
     }
     // pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 
@@ -148,20 +149,30 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
                                    const Eigen::Vector3d& linear_velocity,
                                    const Eigen::Vector3d& angular_velocity)
 {
+    // Full rotation 
+    R_b_w_ = orientation.toRotationMatrix();
+
     // Z-Y-X Euler angles: eulerAngles(2,1,0) returns [yaw, pitch, roll]
-    Eigen::Vector3d euler = orientation.toRotationMatrix().eulerAngles(2, 1, 0);
+    Eigen::Vector3d euler = R_b_w_.eulerAngles(2, 1, 0);
     x[0]  = euler[2];              // roll  (φ)
     x[1]  = euler[1];              // pitch (θ)
     x[2]  = euler[0];              // yaw   (ψ)
     x[3]  = position[0];
     x[4]  = position[1];
     x[5]  = position[2];
-    x[6]  = angular_velocity[0];
-    x[7]  = angular_velocity[1];
-    x[8]  = angular_velocity[2];
-    x[9]  = linear_velocity[0];
-    x[10] = linear_velocity[1];
-    x[11] = linear_velocity[2];
+    
+    // MPC state expects WORLD frame velocities for omega and v.
+    // ROS odometry topic usually reports twist in the body frame (child_frame_id).
+    // So we rotate them to world frame before setting MPC state.
+    Eigen::Vector3d v_world = R_b_w_ * linear_velocity;
+    Eigen::Vector3d w_world = R_b_w_ * angular_velocity;
+
+    x[6]  = w_world[0];
+    x[7]  = w_world[1];
+    x[8]  = w_world[2];
+    x[9]  = v_world[0];
+    x[10] = v_world[1];
+    x[11] = v_world[2];
     x[12] = -g;
 
     // Yaw-only rotation: body frame → world frame (matches go2.R_z in Python ref)
@@ -169,6 +180,16 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     R_z_ <<  cy, -sy, 0.0,
              sy,  cy, 0.0,
             0.0, 0.0, 1.0;
+
+    // Update FreeFlyer state for Pinocchio tracking
+    q_pin_.head<3>() = position;
+    // pinocchio expects quaternion in order (x, y, z, w)
+    q_pin_.segment<4>(3) = Eigen::Vector4d(orientation.x(), orientation.y(), orientation.z(), orientation.w());
+
+    // Pinocchio's spatial velocities for a FreeFlyer are expressed in the LOCAL joint frame.
+    // Since our linear/angular velocities from ROS are already in the body frame, we use them directly.
+    dq_pin_.head<3>() = linear_velocity;
+    dq_pin_.segment<3>(3) = angular_velocity;
 }
 
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const

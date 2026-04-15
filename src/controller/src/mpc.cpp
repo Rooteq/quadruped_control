@@ -13,17 +13,10 @@ void MPC::update(const QuadroModel& model,
     mass_         = model.mass();
     body_inertia_ = model.bodyInertia();
 
-    // Transform foot positions from body frame (Pinocchio fixed-base) to world frame.
-    // Pinocchio returns positions relative to the base origin; GRFs and ri vectors
-    // must be in world frame for the MPC dynamics to be consistent.
-    const Eigen::Matrix3d R_body_world =
-        (Eigen::AngleAxisd(x0_[2], Eigen::Vector3d::UnitZ()) *
-         Eigen::AngleAxisd(x0_[1], Eigen::Vector3d::UnitY()) *
-         Eigen::AngleAxisd(x0_[0], Eigen::Vector3d::UnitX())).toRotationMatrix();
-    const Eigen::Vector3d p_base_world(x0_[3], x0_[4], x0_[5]);
-
+    // Since Pinocchio is using a FreeFlyer model, footPosition already
+    // returns coordinates in the absolute world frame.
     for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
-        foot_positions_[i] = p_base_world + R_body_world * model.footPosition(i);
+        foot_positions_[i] = model.footPosition(i);
 
     angular_vel_cmd_  = angular_vel_cmd;
     linear_vel_cmd_   = linear_vel_cmd;
