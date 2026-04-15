@@ -91,6 +91,10 @@ public:
     /// Used as _BI in the MPC rigid-body model (eq. 14-15 in the paper).
     const Eigen::Matrix3d& bodyInertia() const { return body_inertia_; }
 
+    /// Yaw-only rotation matrix R_z(ψ): rotates body-frame vectors to world frame.
+    /// Equivalent to go2.R_z in the Python reference. Updated by updateBaseState().
+    const Eigen::Matrix3d& bodyYawRotation() const { return R_z_; }
+
     const pinocchio::Model& pinocchioModel() const { return model_; }
     pinocchio::Data& pinocchioData() { return data_; }
     const pinocchio::Data& pinocchioData() const { return data_; }
@@ -122,6 +126,7 @@ private:
     // Cached physical parameters (computed once in constructor)
     double total_mass_ = 0.0;
     Eigen::Matrix3d body_inertia_ = Eigen::Matrix3d::Zero();
+    Eigen::Matrix3d R_z_          = Eigen::Matrix3d::Identity(); // yaw-only body→world rotation
 
 
     Eigen::Matrix<double, 13, 13> Ac;

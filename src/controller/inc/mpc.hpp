@@ -93,17 +93,19 @@ private:
 
     // ── Tuning parameters ─────────────────────────────────────────
     static constexpr double mu_     = 0.6;    // friction coefficient
-    static constexpr double fz_min_ = 1.0;   // min normal GRF [N]
-    static constexpr double fz_max_ = 666.0;  // max normal GRF [N]
+    static constexpr double fz_min_ = 0.2;   // min normal GRF [N]
+    static constexpr double fz_max_ = 70.0;  // max normal GRF [N]
     static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
+    // Matched to the working Python reference (go2-convex-mpc):
+    //   Python state [px,py,pz,φ,θ,ψ,vx,vy,vz,ωx,ωy,ωz] → Q = diag(1,1,50,10,20,1,2,2,1,1,1,1)
     static constexpr double Q_WEIGHTS[N_STATE] = {
-        1.0, 1.0,  1.0,   // roll, pitch, yaw
-        0.0, 0.0, 50.0,   // px, py, pz
-        0.0, 0.0,  1.0,   // wx, wy, wz
-        1.0, 1.0,  0.0,   // vx, vy, vz
-        0.0                // -g (don't penalise constant)
+        10.0, 20.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
+         1.0,  1.0, 50.0,  // px, py, pz                  — high pz: height tracking
+         1.0,  1.0,  1.0,  // ωx, ωy, ωz
+         2.0,  2.0,  1.0,  // vx, vy, vz
+         0.0                // -g (constant state, don't penalise)
     };
 
     // ── Pre-allocated QP matrices ──────────────────────────────────

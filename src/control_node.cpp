@@ -114,9 +114,9 @@ private:
         controller_.updateState(q, dq, effort);
 
 
-        auto& pino_data = controller_.quadro_model_.pinocchioData();
-        RCLCPP_INFO(this->get_logger(), "vcom: [%.3f, %.3f, %.3f]",
-            pino_data.vcom[0][0], pino_data.vcom[0][1], pino_data.vcom[0][2]);
+        // auto& pino_data = controller_.quadro_model_.pinocchioData();
+        // RCLCPP_INFO(this->get_logger(), "vcom: [%.3f, %.3f, %.3f]",
+            // pino_data.vcom[0][0], pino_data.vcom[0][1], pino_data.vcom[0][2]);
         // RCLCPP_INFO(this->get_logger(), "com: [%.3f, %.3f, %.3f]",
         //     pino_data.com[0][0], pino_data.com[0][1], pino_data.com[0][2]);
     }

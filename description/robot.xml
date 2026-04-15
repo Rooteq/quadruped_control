@@ -80,7 +80,7 @@
       <!-- Link shaft -->
       <body name="shaft" pos="-0.0550383 0.114632 7.33851e-06" quat="0 0 -0.707107 0.707107">
         <!-- Joint from back_plate to shaft -->
-        <joint axis="0 0 1" name="br_m1_s1" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+        <joint axis="0 0 1" name="br_m1_s1" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
         <inertial pos="-0.00474046 0.00407901 -0.0612986" mass="0.452938" fullinertia="0.000550761 0.00055728 0.000239291 -6.00381e-05 -1.13918e-05 1.18589e-05"/>
         <!-- Part lin_1_support_br -->
         <geom type="mesh" class="visual" pos="-0.019799 0.019799 -0.0735" quat="0.653281 0.270598 -0.653281 0.270598" mesh="lin_1_support_br" material="lin_1_support_br_material"/>
@@ -94,7 +94,7 @@
         <!-- Link shaft_2 -->
         <body name="shaft_2" pos="-0.00494975 0.00494975 -0.0735" quat="0.270598 -0.653281 0.270598 0.653281">
           <!-- Joint from shaft to shaft_2 -->
-          <joint axis="0 0 1" name="br_m2_s2" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+          <joint axis="0 0 1" name="br_m2_s2" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
           <inertial pos="0.00931177 -0.00187407 -0.0491985" mass="0.524841" fullinertia="0.000439148 0.000912333 0.000883052 6.14395e-05 0.000140002 -3.78102e-05"/>
           <!-- Part bot_r -->
           <geom type="mesh" class="visual" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="bot_r" material="bot_r_material"/>
@@ -114,7 +114,7 @@
           <!-- Link shaft_3 -->
           <body name="shaft_3" pos="0 -0 -0.0495" quat="0.993572 -0 0 -0.113203">
             <!-- Joint from shaft_2 to shaft_3 -->
-            <joint axis="0 0 1" name="br_m3_s3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="br_m3_s3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 -2.3154e-05 1.04189e-05 1.04189e-05"/>
             <!-- Part bearing -->
             <geom type="mesh" class="visual" pos="0.0388909 0.0388909 -0.032" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="bearing" material="bearing_material"/>
@@ -129,7 +129,7 @@
           <!-- Link l4_r -->
           <body name="l4_r" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 -0 0 -0.48481">
             <!-- Joint from shaft_2 to l4_r -->
-            <joint axis="0 0 1" name="br_l4_l3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="br_l4_l3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00103938 -0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 -3.74948e-07 4.07464e-07 -6.18739e-06"/>
             <!-- Part l4_r -->
             <geom type="mesh" class="visual" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 0 -0" mesh="l4_r" material="l4_r_material"/>
@@ -155,7 +155,7 @@
       <!-- Link shaft_4 -->
       <body name="shaft_4" pos="0.0549617 0.114632 7.33841e-06" quat="0 0 -0.707107 0.707107">
         <!-- Joint from back_plate to shaft_4 -->
-        <joint axis="0 0 1" name="bl_m1_s1" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+        <joint axis="0 0 1" name="bl_m1_s1" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
         <inertial pos="0.00473706 0.0040862 -0.0608763" mass="0.453012" fullinertia="0.000546146 0.000552555 0.000239462 6.01031e-05 1.17627e-05 1.15907e-05"/>
         <!-- Part shaft_4 -->
         <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
@@ -169,7 +169,7 @@
         <!-- Link shaft_5 -->
         <body name="shaft_5" pos="0.00494975 0.00494975 -0.0735" quat="0.701057 -0.430459 0.560986 0.092296">
           <!-- Joint from shaft_4 to shaft_5 -->
-          <joint axis="0 0 1" name="bl_m2_s2" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+          <joint axis="0 0 1" name="bl_m2_s2" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
           <inertial pos="0.00679431 0.00633758 -0.0491985" mass="0.524841" fullinertia="0.000610231 0.000743295 0.000885096 -0.000236595 0.000101861 0.00010283"/>
           <!-- Part lin_2_bl -->
           <geom type="mesh" class="visual" pos="0 0 -0.0195" quat="0.704416 0.704416 -0.0616284 -0.0616284" mesh="lin_2_bl" material="lin_2_bl_material"/>
@@ -189,7 +189,7 @@
           <!-- Link shaft_6 -->
           <body name="shaft_6" pos="-0 0 -0.0495" quat="0.366501 -0 -0 -0.930418">
             <!-- Joint from shaft_5 to shaft_6 -->
-            <joint axis="0 0 1" name="bl_m3_s3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="bl_m3_s3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="-0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 2.3154e-05 -1.04189e-05 1.04189e-05"/>
             <!-- Part bearing_4 -->
             <geom type="mesh" class="visual" pos="-0.0388909 0.0388909 -0.032" quat="0.270598 -0.270598 0.653281 -0.653281" mesh="bearing" material="bearing_material"/>
@@ -204,7 +204,7 @@
           <!-- Link l4_l -->
           <body name="l4_l" pos="0.129917 0.0934105 -0.0735" quat="0.71934 -0 0 0.694658">
             <!-- Joint from shaft_5 to l4_l -->
-            <joint axis="0 0 1" name="bl_l4_l3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="bl_l4_l3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="0.00103938 0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 3.74948e-07 4.07464e-07 6.18739e-06"/>
             <!-- Part bearing_5 -->
             <geom type="mesh" class="visual" pos="-0 0 -0.008" quat="0.707107 -0.707107 -0 0" mesh="bearing" material="bearing_material"/>
@@ -230,7 +230,7 @@
       <!-- Link shaft_7 -->
       <body name="shaft_7" pos="-0.0550383 -0.114368 7.33851e-06" quat="0 -0 0.707107 0.707107">
         <!-- Joint from back_plate to shaft_7 -->
-        <joint axis="0 0 1" name="fr_m1_s1" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+        <joint axis="0 0 1" name="fr_m1_s1" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
         <inertial pos="-0.00469968 -0.00412358 -0.0608763" mass="0.453012" fullinertia="0.000545527 0.000553194 0.000239482 6.01135e-05 -1.23936e-05 -1.09597e-05"/>
         <!-- Part lin_1_support_fr -->
         <geom type="mesh" class="visual" pos="-0.109319 -0.109319 -0.0735" quat="0.270598 0.653281 -0.270598 0.653281" mesh="lin_1_support_fr" material="lin_1_support_fr_material"/>
@@ -244,7 +244,7 @@
         <!-- Link shaft_8 -->
         <body name="shaft_8" pos="-0.00494975 -0.00494975 -0.0735" quat="0.653281 0.270598 -0.653281 0.270598">
           <!-- Joint from shaft_7 to shaft_8 -->
-          <joint axis="0 0 1" name="fr_m2_s2" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+          <joint axis="0 0 1" name="fr_m2_s2" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
           <inertial pos="0.00960955 -0.00201737 -0.0491732" mass="0.525416" fullinertia="0.000440202 0.000909648 0.000880794 6.05777e-05 0.000136109 -3.55951e-05"/>
           <!-- Part lin_2_fr -->
           <geom type="mesh" class="visual" pos="0 0 0.1305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_fr" material="lin_2_fr_material"/>
@@ -264,7 +264,7 @@
           <!-- Link shaft_9 -->
           <body name="shaft_9" pos="0 -0 -0.0495" quat="0.993572 -0 0 -0.113203">
             <!-- Joint from shaft_8 to shaft_9 -->
-            <joint axis="0 0 1" name="fr_m3_s3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="fr_m3_s3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 -2.3154e-05 1.04189e-05 1.04189e-05"/>
             <!-- Part mid_r_2 -->
             <geom type="mesh" class="visual" pos="0 0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
@@ -279,7 +279,7 @@
           <!-- Link l4_r_2 -->
           <body name="l4_r_2" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 -0 -0 -0.48481">
             <!-- Joint from shaft_8 to l4_r_2 -->
-            <joint axis="0 0 1" name="fr_l4_l3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="fr_l4_l3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00103938 -0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 -3.74948e-07 4.07464e-07 -6.18739e-06"/>
             <!-- Part bearing_8 -->
             <geom type="mesh" class="visual" pos="-0 0 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
@@ -305,7 +305,7 @@
       <!-- Link motor -->
       <body name="motor" pos="0.0549617 -0.114368 7.33841e-06" quat="0 -0 0.707107 0.707107">
         <!-- Joint from back_plate to motor -->
-        <joint axis="0 0 1" name="fl_m1_s1" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+        <joint axis="0 0 1" name="fl_m1_s1" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
         <inertial pos="0.00470307 -0.0041164 -0.0612986" mass="0.452937" fullinertia="0.000550142 0.00055792 0.000239312 -6.00486e-05 1.20299e-05 -1.12208e-05"/>
         <!-- Part motor_11 -->
         <geom type="mesh" class="visual" pos="0.0120208 -0.0120208 -0.0735" quat="0.270598 -0.270598 -0.653281 0.653281" mesh="motor" material="motor_material"/>
@@ -319,7 +319,7 @@
         <!-- Link motor_2 -->
         <body name="motor_2" pos="0.00494975 -0.00494975 -0.0735" quat="0.653281 0.270598 0.653281 -0.270598">
           <!-- Joint from motor to motor_2 -->
-          <joint axis="0 0 1" name="fl_m2_s2" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+          <joint axis="0 0 1" name="fl_m2_s2" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
           <inertial pos="-0.00935089 -0.00223441 -0.0491732" mass="0.525416" fullinertia="0.000439621 0.000912321 0.000882886 -5.98025e-05 -0.000135732 -3.59112e-05"/>
           <!-- Part motor_12 -->
           <geom type="mesh" class="visual" pos="0 -0 -0.0395" quat="0.298836 0.640856 0.298836 -0.640856" mesh="motor" material="motor_material"/>
@@ -339,7 +339,7 @@
           <!-- Link shaft_10 -->
           <body name="shaft_10" pos="0 0 -0.0495" quat="0.993572 -0 0 0.113203">
             <!-- Joint from motor_2 to shaft_10 -->
-            <joint axis="0 0 1" name="fl_m3_s3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="fl_m3_s3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="-0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 2.3154e-05 -1.04189e-05 1.04189e-05"/>
             <!-- Part mid_l_2 -->
             <geom type="mesh" class="visual" pos="0 -0 -0.014" quat="0.270598 0.270598 -0.653281 -0.653281" mesh="mid_l" material="mid_l_material"/>
@@ -354,7 +354,7 @@
           <!-- Link l4_l_2 -->
           <body name="l4_l_2" pos="-0.159217 -0.0159373 -0.0735" quat="0.48481 0 -0 -0.87462">
             <!-- Joint from motor_2 to l4_l_2 -->
-            <joint axis="0 0 1" name="fl_l4_l3" type="hinge" range="-3.14 3.14" frictionloss="0.00"/>
+            <joint axis="0 0 1" name="fl_l4_l3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="0.00103938 0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 3.74948e-07 4.07464e-07 6.18739e-06"/>
             <!-- Part bearing_11 -->
             <geom type="mesh" class="visual" pos="0 -0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>

@@ -104,13 +104,14 @@ public:
     void calculateDesiredBodyTrajectory()
     {
         const auto& x0 = quadro_model_.stateVector();
-        double yaw     = x0[2];
+        double yaw      = x0[2];
         double yaw_rate = desired_angular_vel_[2];
 
-        // Rotate body-frame cmd_vel into world frame using current yaw
-        double cy = std::cos(yaw), sy = std::sin(yaw);
-        double vx_w = cy * desired_linear_vel_[0] - sy * desired_linear_vel_[1];
-        double vy_w = sy * desired_linear_vel_[0] + cy * desired_linear_vel_[1];
+        // Rotate body-frame cmd_vel into world frame using R_z (matches go2.R_z in Python ref)
+        const Eigen::Matrix3d& R_z = quadro_model_.bodyYawRotation();
+        Eigen::Vector3d vel_world  = R_z * desired_linear_vel_;
+        double vx_w = vel_world[0];
+        double vy_w = vel_world[1];
 
         for (int i = 0; i < HORIZON_STEPS; ++i)
         {

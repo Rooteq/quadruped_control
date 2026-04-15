@@ -163,6 +163,12 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     x[10] = linear_velocity[1];
     x[11] = linear_velocity[2];
     x[12] = -g;
+
+    // Yaw-only rotation: body frame → world frame (matches go2.R_z in Python ref)
+    const double cy = std::cos(x[2]), sy = std::sin(x[2]);
+    R_z_ <<  cy, -sy, 0.0,
+             sy,  cy, 0.0,
+            0.0, 0.0, 1.0;
 }
 
 Eigen::Vector3d QuadroModel::footPosition(int leg_idx) const

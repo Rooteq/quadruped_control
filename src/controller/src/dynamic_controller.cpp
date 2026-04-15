@@ -40,12 +40,8 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
 
     const auto& g  = model.gravityCompensation();
 
-    // GRFs from MPC are in world frame; Jacobian is in base frame.
-    const auto& x = model.stateVector();
-    const Eigen::Matrix3d R =
-        (Eigen::AngleAxisd(x[2], Eigen::Vector3d::UnitZ()) *
-         Eigen::AngleAxisd(x[1], Eigen::Vector3d::UnitY()) *
-         Eigen::AngleAxisd(x[0], Eigen::Vector3d::UnitX())).toRotationMatrix();
+    // footJacobian() uses LOCAL_WORLD_ALIGNED, so its columns are already in world frame.
+    // GRFs from MPC are also world frame — no rotation needed (matches Python: J_world.T @ -f).
 
     for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
     {
@@ -54,14 +50,11 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
 
         if (gait.inStance(leg))
         {
-            // ── Stance: τ = Jᵀ Rᵀ f ──────────────────────────────────────
-            // The MPC GRF already accounts for gravity, so no extra gravity
-            // compensation is needed for stance joints.
-            const Eigen::Vector3d f_base = R.transpose() * grfs[leg];
-            const Eigen::Vector3d tau_leg = J.transpose() * f_base;
+            // ── Stance: τ = g(q) − Jᵀ f  (Newton-Euler quasi-static) ─────
+            const Eigen::Vector3d tau_leg = J.transpose() * grfs[leg];
 
             for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
-                torques[base + j] = tau_leg[j];
+                torques[base + j] = g[base + j] - tau_leg[j];
         }
         else
         {
