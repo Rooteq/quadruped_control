@@ -4,7 +4,7 @@
 namespace quadro
 {
 
-static constexpr double STAND_TAU_MAX = 30.0;  // Nm — prevents explosion from large initial errors
+static constexpr double STAND_TAU_MAX = 70.0;  // Nm — prevents explosion from large initial errors
 
 std::array<double, NUM_JOINTS> DynamicController::computeStand(
     const QuadroModel& model,

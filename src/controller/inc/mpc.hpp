@@ -101,12 +101,12 @@ private:
     // ── Tuning parameters ─────────────────────────────────────────
     static constexpr double mu_     = 0.6;    // friction coefficient
     static constexpr double fz_min_ = 1.0;    // min normal GRF [N]
-    static constexpr double fz_max_ = 50.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
+    static constexpr double fz_max_ = 150.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
     static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     static constexpr double Q_WEIGHTS[N_STATE] = {
-        2.0, 2.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
+        10.0, 10.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
          1.0,  1.0, 50.0,  // px, py, pz                  — high pz: height tracking
          1.0,  1.0,  1.0,  // ωx, ωy, ωz
          2.0,  2.0,  1.0,  // vx, vy, vz

@@ -88,8 +88,12 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const Eigen::Vector3d& current_vel,
     const Eigen::Vector3d& desired_vel) const
 {
-    // Hip position already in world frame from pinocchio — no hardcoded offsets or R_z needed
-    Eigen::Vector3d hip_pos_world = model.hipPosition(leg_idx);
+    // Hip position in world frame: body-frame hardcoded offset rotated by yaw-only R_z.
+    // These hipPos values are the validated Raibert reference points for this robot.
+    const Eigen::VectorXd& state = model.stateVector();
+    Eigen::Vector3d base_pos(state[3], state[4], 0.0);  // z=0: project onto ground plane
+    Eigen::Matrix3d R_z = model.bodyYawRotation();
+    Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
 
     double t_swing  = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
     double t_stance = gait.gait().duty_cycle * gait.gait().period;
