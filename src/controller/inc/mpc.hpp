@@ -27,13 +27,14 @@ public:
                 const Eigen::Vector3d& angular_vel_cmd,
                 const Eigen::Vector3d& linear_vel_cmd,
                 const std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>& x_ref,
-                const GaitScheduler& gait_scheduler);
+                const GaitScheduler& gait_scheduler,
+                const std::array<Eigen::Vector3d, NUM_LEGS>& foot_positions);
 
     /// Build Ac/Ad (single, from average yaw) and Bc[n]/Bd[n] (per step, from
     /// per-step yaw and contact schedule). Must be called after update().
     void calculateDynamicsMatrices();
 
-    /// Solve QP and populate grfs_. QP logic to be added — currently zeroes.
+    /// Solve QP and populate grfs_
     void run();
 
     // ── Accessors ─────────────────────────────────────────────────
@@ -98,14 +99,12 @@ private:
     static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
-    // Matched to the working Python reference (go2-convex-mpc):
-    //   Python state [px,py,pz,φ,θ,ψ,vx,vy,vz,ωx,ωy,ωz] → Q = diag(1,1,50,10,20,1,2,2,1,1,1,1)
     static constexpr double Q_WEIGHTS[N_STATE] = {
         10.0, 20.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
          1.0,  1.0, 50.0,  // px, py, pz                  — high pz: height tracking
          1.0,  1.0,  1.0,  // ωx, ωy, ωz
          2.0,  2.0,  1.0,  // vx, vy, vz
-         0.0                // -g (constant state, don't penalise)
+         0.0                // const, don't penalise
     };
 
     // ── Pre-allocated QP matrices ──────────────────────────────────

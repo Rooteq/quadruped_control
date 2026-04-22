@@ -21,7 +21,8 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
     const QuadroModel& model,
     const GaitScheduler& gait,
     const Eigen::Vector3d& desired_linear_vel,
-    const Eigen::Vector3d& /*desired_angular_vel*/)
+    const Eigen::Vector3d& /*desired_angular_vel*/,
+    const Eigen::Vector3d& current_vel)
 {
     std::array<LegTarget, NUM_LEGS> targets{};
 
@@ -63,7 +64,7 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
                 swing_states_[leg].liftoff_pos = p_world;
                 // Use ACTUAL body velocity for Raibert heuristic
                 swing_states_[leg].landing_pos = computeLandingPos(
-                    model, gait, leg, base_vel_w);
+                    model, gait, leg, current_vel, desired_linear_vel);
                 swing_states_[leg].active = true;
             }
 
@@ -80,22 +81,31 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const QuadroModel& model,
     const GaitScheduler& gait,
     int leg_idx,
-    const Eigen::Vector3d& body_velocity) const
+    const Eigen::Vector3d& current_vel,
+    const Eigen::Vector3d& desired_vel) const
 {
-    // Raibert heuristic: land under hip + velocity compensation
+    // Raibert heuristic matching Python reference implementation
     const Eigen::VectorXd& state = model.stateVector();
     Eigen::Vector3d base_pos(state[3], state[4], 0.0);
     Eigen::Matrix3d R_z = model.bodyYawRotation();
 
-    // Rotate hip offset into world and add base position
-    Eigen::Vector3d hip_ground = base_pos + R_z * hipPos[leg_idx];
-    hip_ground.z() = NOMINAL_HEIGHT;
+    Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
+    
+    double t_swing = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
+    double t_stance = gait.gait().duty_cycle * gait.gait().period;
+    double T = t_swing + 0.5 * t_stance;
+    double pred_time = T / 2.0;
 
-    double stance_duration = gait.gait().duty_cycle * gait.gait().period;
-    Eigen::Vector3d landing = hip_ground + body_velocity * (stance_duration / 2.0);
-    landing.z() = NOMINAL_HEIGHT;
+    double k_v_x = 0.4 * T;
+    double k_v_y = 0.2 * T;
 
-    return landing;
+    Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
+    Eigen::Vector3d drift(desired_vel.x() * pred_time, desired_vel.y() * pred_time, 0.0);
+    Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - desired_vel.x()), 
+                                   k_v_y * (current_vel.y() - desired_vel.y()), 
+                                   0.0);
+
+    return pos_nominal + drift + vel_correction;
 }
 
 Eigen::Vector3d TrajectoryGenerator::evaluateSwing(

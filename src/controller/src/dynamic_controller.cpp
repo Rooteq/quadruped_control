@@ -55,10 +55,10 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
         {
             // ── Stance: τ = Jᵀ f  (Newton-Euler quasi-static) ─────
             // J is in LOCAL_WORLD_ALIGNED frame (world axes), GRF is in world frame
-            const Eigen::Vector3d tau_leg = J.transpose() * grfs[leg];
+            const Eigen::Vector3d tau_leg = J.transpose() * -grfs[leg];
 
             for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
-                torques[base + j] = -tau_leg[j];
+                torques[base + j] = tau_leg[j];
         }
         else
         {

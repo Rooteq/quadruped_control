@@ -83,13 +83,13 @@ public:
 
     const Eigen::Matrix<double, 13, 1>& stateVector() const { return x; }
 
-    /// Total robot mass (cached at construction from URDF)
-    double mass() const { return total_mass_; }
+    /// Total robot mass (from data.Ig)
+    double mass() const { return data_.Ig.mass(); }
 
     /// Composite inertia tensor of the whole robot about its COM,
     /// expressed in the world frame at neutral config (cached at construction).
     /// Used as _BI in the MPC rigid-body model (eq. 14-15 in the paper).
-    const Eigen::Matrix3d& bodyInertia() const { return body_inertia_; }
+    Eigen::Matrix3d bodyInertia() const { return data_.Ig.inertia().matrix(); }
 
     /// Yaw-only rotation matrix R_z(ψ): rotates body-frame vectors to world frame.
     /// Equivalent to go2.R_z in the Python reference. Updated by updateBaseState().
@@ -127,8 +127,6 @@ private:
     std::array<pinocchio::FrameIndex, NUM_LEGS> hip_frame_ids_;
 
     // Cached physical parameters (computed once in constructor)
-    double total_mass_ = 0.0;
-    Eigen::Matrix3d body_inertia_ = Eigen::Matrix3d::Zero();
     Eigen::Matrix3d R_z_          = Eigen::Matrix3d::Identity(); // yaw-only body→world rotation
     Eigen::Matrix3d R_b_w_        = Eigen::Matrix3d::Identity(); // full body→world rotation
 

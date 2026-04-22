@@ -7,16 +7,15 @@ void MPC::update(const QuadroModel& model,
                  const Eigen::Vector3d& angular_vel_cmd,
                  const Eigen::Vector3d& linear_vel_cmd,
                  const std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>& x_ref,
-                 const GaitScheduler& gait_scheduler)
+                 const GaitScheduler& gait_scheduler,
+                 const std::array<Eigen::Vector3d, NUM_LEGS>& foot_positions)
 {
     x0_           = model.stateVector();
     mass_         = model.mass();
     body_inertia_ = model.bodyInertia();
 
-    // Since Pinocchio is using a FreeFlyer model, footPosition already
-    // returns coordinates in the absolute world frame.
     for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
-        foot_positions_[i] = model.footPosition(i);
+        foot_positions_[i] = foot_positions[i];
 
     angular_vel_cmd_  = angular_vel_cmd;
     linear_vel_cmd_   = linear_vel_cmd;
