@@ -15,8 +15,8 @@ class DynamicController
 public:
     DynamicController() = default;
 
-    /// Standing controller — high-gain Cartesian PD to lift and hold the robot.
-    /// Used before handing off to the swing/walk controller.
+    /// Standing controller — Cartesian PD via J^T to reach nominal pose.
+    /// leg_targets hold desired foot positions in world frame.
     std::array<double, NUM_JOINTS> computeStand(
         const QuadroModel& model,
         const std::array<LegTarget, NUM_LEGS>& leg_targets);
@@ -29,9 +29,9 @@ public:
         const std::array<Eigen::Vector3d, NUM_LEGS>& grfs);
 
 private:
-    // Stand: moderate gains — high Kp caused impulse launches at large initial errors
-    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(120.0, 120.0, 120.0);
-    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(8.0,   8.0,   8.0);
+    // Stand: Cartesian PD gains — needs Kp*err > mg/4 per leg (~17 N for 7 kg robot)
+    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(300.0, 300.0, 300.0);
+    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(10.0,  10.0,  10.0);
 
     // Walk: higher exact PD matching python
     Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(80.0, 80.0, 80.0);

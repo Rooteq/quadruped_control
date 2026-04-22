@@ -4,7 +4,7 @@
 namespace quadro
 {
 
-static constexpr double STAND_TAU_MAX = 70.0;  // Nm — prevents explosion from large initial errors
+static constexpr double STAND_TAU_MAX = 50.0;  // Nm per joint — clamp against impulses at startup
 
 std::array<double, NUM_JOINTS> DynamicController::computeStand(
     const QuadroModel& model,
@@ -27,7 +27,6 @@ std::array<double, NUM_JOINTS> DynamicController::computeStand(
 
         size_t base = leg * JOINTS_PER_LEG;
         for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
-            // torques[base + j] = std::clamp(tau_leg[j] + g[base + j], -STAND_TAU_MAX, STAND_TAU_MAX);
             torques[base + j] = std::clamp(tau_leg[j] + g[base + j], -STAND_TAU_MAX, STAND_TAU_MAX);
     }
 
@@ -43,12 +42,6 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
     std::array<double, NUM_JOINTS> torques{};
 
     const auto& g  = model.gravityCompensation();
-    
-    // Convert to world frame since our model generates local coordinates
-    const Eigen::Matrix3d& R_b_w = model.bodyToWorldRotation();
-    const Eigen::VectorXd& state = model.stateVector();
-    Eigen::Vector3d base_pos_w(state[3], state[4], state[5]);
-    Eigen::Vector3d base_vel_w(state[9], state[10], state[11]);
 
     for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
     {

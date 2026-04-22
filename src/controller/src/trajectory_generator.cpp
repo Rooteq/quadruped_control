@@ -21,7 +21,7 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
     const QuadroModel& model,
     const GaitScheduler& gait,
     const Eigen::Vector3d& desired_linear_vel,
-    const Eigen::Vector3d& /*desired_angular_vel*/,
+    const Eigen::Vector3d& desired_angular_vel,
     const Eigen::Vector3d& current_vel)
 {
     std::array<LegTarget, NUM_LEGS> targets{};
@@ -68,7 +68,7 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
                 swing_states_[leg].liftoff_pos = p_world;
                 // Use ACTUAL body velocity for Raibert heuristic
                 swing_states_[leg].landing_pos = computeLandingPos(
-                    model, gait, leg, current_vel, desired_linear_vel);
+                    model, gait, leg, current_vel, desired_linear_vel, desired_angular_vel[2]);
                 swing_states_[leg].active = true;
             }
 
@@ -86,31 +86,42 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const GaitScheduler& gait,
     int leg_idx,
     const Eigen::Vector3d& current_vel,
-    const Eigen::Vector3d& desired_vel) const
+    const Eigen::Vector3d& desired_vel,
+    double yaw_rate_des) const
 {
-    // Hip position in world frame: body-frame hardcoded offset rotated by yaw-only R_z.
-    // These hipPos values are the validated Raibert reference points for this robot.
     const Eigen::VectorXd& state = model.stateVector();
     Eigen::Vector3d base_pos(state[3], state[4], 0.0);  // z=0: project onto ground plane
     Eigen::Matrix3d R_z = model.bodyYawRotation();
     Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
 
-    double t_swing  = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
-    double t_stance = gait.gait().duty_cycle * gait.gait().period;
-    double T        = t_swing + 0.5 * t_stance;
+    double t_swing   = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
+    double t_stance  = gait.gait().duty_cycle * gait.gait().period;
+    double T         = t_swing + 0.5 * t_stance;
     double pred_time = T / 2.0;
 
     double k_v_x = 0.4 * T;
     double k_v_y = 0.2 * T;
 
-    // Nominal: directly below hip on the ground plane
+    // Nominal: hip projected onto ground plane
     Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
-    Eigen::Vector3d drift(desired_vel.x() * pred_time, desired_vel.y() * pred_time, 0.0);
-    Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - desired_vel.x()),
-                                   k_v_y * (current_vel.y() - desired_vel.y()),
+
+    // Drift: actual body velocity (world frame) — Raibert placement
+    Eigen::Vector3d drift(current_vel.x() * pred_time, current_vel.y() * pred_time, 0.0);
+
+    // Velocity correction: desired_vel is body-frame, rotate to world frame first
+    Eigen::Vector3d des_vel_world = R_z * desired_vel;
+    Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - des_vel_world.x()),
+                                   k_v_y * (current_vel.y() - des_vel_world.y()),
                                    0.0);
 
-    return pos_nominal + drift + vel_correction;
+    // Rotation correction: accounts for where the hip will be after yawing by dtheta
+    // r_xy = hip offset from body center in world frame
+    double dtheta = yaw_rate_des * pred_time;
+    double r_x = hip_pos_world.x() - base_pos.x();
+    double r_y = hip_pos_world.y() - base_pos.y();
+    Eigen::Vector3d rot_correction(-dtheta * r_y, dtheta * r_x, 0.0);
+
+    return pos_nominal + drift + vel_correction + rot_correction;
 }
 
 Eigen::Vector3d TrajectoryGenerator::evaluateSwing(
