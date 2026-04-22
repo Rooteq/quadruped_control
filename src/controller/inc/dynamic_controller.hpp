@@ -29,9 +29,9 @@ public:
         const std::array<Eigen::Vector3d, NUM_LEGS>& grfs);
 
 private:
-    // Stand: high gains needed to lift the robot against gravity
-    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(300.0, 300.0, 300.0);
-    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(15.0,  15.0,  15.0);
+    // Stand: moderate gains — high Kp caused impulse launches at large initial errors
+    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(120.0, 120.0, 120.0);
+    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(8.0,   8.0,   8.0);
 
     // Walk: higher exact PD matching python
     Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(80.0, 80.0, 80.0);

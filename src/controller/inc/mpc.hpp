@@ -1,9 +1,12 @@
 #pragma once
 #include <array>
 #include <cmath>
+#include <cstdio>
 #include <eigen3/Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include "qpOASES.hpp"
+#include <casadi/casadi.hpp>
 
 #include "model.hpp"
 #include "gait_scheduler.hpp"
@@ -36,6 +39,9 @@ public:
 
     /// Solve QP and populate grfs_
     void run();
+
+    /// Solve QP using CasADi sparse formulation exactly like Python project
+    void run_casadi();
 
     // ── Accessors ─────────────────────────────────────────────────
     const Eigen::Matrix<double, 13, 13>& continuousA() const { return Ac_; }
@@ -94,13 +100,13 @@ private:
 
     // ── Tuning parameters ─────────────────────────────────────────
     static constexpr double mu_     = 0.6;    // friction coefficient
-    static constexpr double fz_min_ = 0.2;   // min normal GRF [N]
-    static constexpr double fz_max_ = 70.0;  // max normal GRF [N]
+    static constexpr double fz_min_ = 1.0;    // min normal GRF [N]
+    static constexpr double fz_max_ = 50.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
     static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     static constexpr double Q_WEIGHTS[N_STATE] = {
-        10.0, 20.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
+        2.0, 2.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)  — high: attitude stability
          1.0,  1.0, 50.0,  // px, py, pz                  — high pz: height tracking
          1.0,  1.0,  1.0,  // ωx, ωy, ωz
          2.0,  2.0,  1.0,  // vx, vy, vz
@@ -140,9 +146,18 @@ private:
         C_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Zero(N_CON, N_VAR);
 
     // ── qpOASES solver ────────────────────────────────────────────
-    // H and A change every MPC step (Bqp / contact schedule), so init() is
-    // called each cycle. qpOASES resets internally on each init() call.
     qpOASES::QProblem qp_{N_VAR, N_CON, qpOASES::HST_POSDEF};
+
+    // Warm start: primal (N_VAR) + dual (N_VAR + N_CON) from previous solve
+    static constexpr int N_DUAL = N_VAR + N_CON;
+    Eigen::Matrix<double, N_VAR, 1>  u_warm_ = Eigen::Matrix<double, N_VAR, 1>::Zero();
+    Eigen::Matrix<double, N_DUAL, 1> y_warm_ = Eigen::Matrix<double, N_DUAL, 1>::Zero();
+    bool has_warm_start_ = false;
+
+    // Previous contact schedule — used to detect transitions and invalidate warm start
+    std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS> prev_contact_schedule_{};
+
+    int print_counter_ = 0;
 
     static Eigen::Matrix3d skewSymmetric(const Eigen::Vector3d& v);
 

@@ -43,16 +43,20 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
 
         if (gait.inStance(leg))
         {
+            // On swing→stance transition, lock the touchdown position.
+            // Holding this anchor means the Cartesian PD (used as fallback when
+            // a leg is mis-routed to swing) pulls back to the correct foothold
+            // rather than following wherever the foot drifted.
             if (!swing_states_[leg].stance_initialized)
             {
+                swing_states_[leg].stance_foot_pos   = p_world;
                 swing_states_[leg].stance_initialized = true;
             }
 
             swing_states_[leg].active = false;
 
-            // In Stance: Target is where the foot currently is in world.
-            targets[leg].foot_pos = p_world;
-            targets[leg].foot_vel = v_world; // or Vector3d::Zero() since foot is planted
+            targets[leg].foot_pos = swing_states_[leg].stance_foot_pos;
+            targets[leg].foot_vel = Eigen::Vector3d::Zero();
         }
         else
         {
@@ -84,25 +88,22 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const Eigen::Vector3d& current_vel,
     const Eigen::Vector3d& desired_vel) const
 {
-    // Raibert heuristic matching Python reference implementation
-    const Eigen::VectorXd& state = model.stateVector();
-    Eigen::Vector3d base_pos(state[3], state[4], 0.0);
-    Eigen::Matrix3d R_z = model.bodyYawRotation();
+    // Hip position already in world frame from pinocchio — no hardcoded offsets or R_z needed
+    Eigen::Vector3d hip_pos_world = model.hipPosition(leg_idx);
 
-    Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
-    
-    double t_swing = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
+    double t_swing  = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
     double t_stance = gait.gait().duty_cycle * gait.gait().period;
-    double T = t_swing + 0.5 * t_stance;
+    double T        = t_swing + 0.5 * t_stance;
     double pred_time = T / 2.0;
 
     double k_v_x = 0.4 * T;
     double k_v_y = 0.2 * T;
 
+    // Nominal: directly below hip on the ground plane
     Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
     Eigen::Vector3d drift(desired_vel.x() * pred_time, desired_vel.y() * pred_time, 0.0);
-    Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - desired_vel.x()), 
-                                   k_v_y * (current_vel.y() - desired_vel.y()), 
+    Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - desired_vel.x()),
+                                   k_v_y * (current_vel.y() - desired_vel.y()),
                                    0.0);
 
     return pos_nominal + drift + vel_correction;
