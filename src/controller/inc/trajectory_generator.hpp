@@ -38,7 +38,8 @@ public:
         const QuadroModel& model,
         const GaitScheduler& gait,
         const Eigen::Vector3d& desired_linear_vel,
-        const Eigen::Vector3d& desired_angular_vel);
+        const Eigen::Vector3d& desired_angular_vel,
+        const Eigen::Vector3d& current_vel);
 
     static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
 
@@ -47,13 +48,19 @@ public:
         return {hipPos[leg].x(), hipPos[leg].y(), NOMINAL_HEIGHT};
     }
 
+    Eigen::Vector3d getLandingPos(int leg) const
+    {
+        return swing_states_[leg].landing_pos;
+    }
+
 private:
     /// Raibert foot placement heuristic (body frame)
     Eigen::Vector3d computeLandingPos(
         const QuadroModel& model,
         const GaitScheduler& gait,
         int leg_idx,
-        const Eigen::Vector3d& body_velocity) const;
+        const Eigen::Vector3d& current_vel,
+        const Eigen::Vector3d& desired_vel) const;
 
     /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;

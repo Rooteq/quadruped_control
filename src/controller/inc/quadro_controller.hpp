@@ -40,7 +40,7 @@ public:
     {
         gait_scheduler_.advance(planning_dt_);
         leg_targets_ = trajectory_generator_.generate(
-            quadro_model_, gait_scheduler_, desired_linear_vel_, desired_angular_vel_);
+            quadro_model_, gait_scheduler_, desired_linear_vel_, desired_angular_vel_, quadro_model_.stateVector().segment<3>(9));
     }
 
     bool isStandingComplete() const { return standing_complete_; }
@@ -58,7 +58,7 @@ public:
         const double z_target = alpha * TrajectoryGenerator::NOMINAL_HEIGHT;
 
         const auto& x0 = quadro_model_.stateVector();
-        Eigen::Vector3d base_pos(x0[3], x0[4], 0.0);
+        Eigen::Vector3d base_pos(x0[3], x0[4], x0[5]);
         Eigen::Matrix3d R_z = quadro_model_.bodyYawRotation();
 
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
@@ -88,7 +88,15 @@ public:
 
     void updateMPC()
     {
-        mpc_.update(quadro_model_, desired_angular_vel_, desired_linear_vel_, x_ref_, gait_scheduler_);
+        std::array<Eigen::Vector3d, NUM_LEGS> footprints;
+        for (int i = 0; i < 4; ++i) {
+            if (gait_scheduler_.inStance(i)) {
+                footprints[i] = quadro_model_.footPosition(i);
+            } else {
+                footprints[i] = trajectory_generator_.getLandingPos(i);
+            }
+        }
+        mpc_.update(quadro_model_, desired_angular_vel_, desired_linear_vel_, x_ref_, gait_scheduler_, footprints);
     }
 
     /// Run MPC solve and copy resulting GRFs into grfs_.
@@ -191,7 +199,7 @@ private:
     double settle_time_          = -1.0;
 
     static constexpr double STAND_LOWER_DURATION = 2.0;  // seconds to lower legs
-    static constexpr double STAND_HOLD_DURATION  = 1.0;  // seconds to hold before walking
+    static constexpr double STAND_HOLD_DURATION  = 0.2;  // seconds to hold before walking
 
     // Reference trajectory — HORIZON_STEPS × 13-state vectors
     // x_ref_[n] = desired state at prediction step n

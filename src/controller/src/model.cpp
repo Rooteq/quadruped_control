@@ -25,43 +25,6 @@ q_pin_ = pinocchio::neutral(model_);
         x.setZero();
         x[12] = -g;
 
-        // ── Cache mass and composite body inertia ─────────────────
-        total_mass_ = pinocchio::computeTotalMass(model_);
-
-        // Compute composite inertia about the robot's COM at neutral config.
-        // For each body: rotate its inertia (stored at body COM, in joint frame)
-        // to world frame, then apply the parallel axis theorem to move it to
-        // the robot's total COM.
-        auto q_neutral = pinocchio::neutral(model_);
-        pinocchio::forwardKinematics(model_, data_, q_neutral);
-        pinocchio::centerOfMass(model_, data_, q_neutral);   // fills data_.com[0]
-
-        Eigen::Vector3d com = data_.com[0];
-        body_inertia_.setZero();
-
-        // Then Rz * I Rz^T - rotate it to the world frame
-        for (pinocchio::JointIndex i = 1; i < (pinocchio::JointIndex)model_.njoints; ++i)
-        {
-            const pinocchio::Inertia& Y  = model_.inertias[i];
-            const pinocchio::SE3&     oMi = data_.oMi[i];
-
-            double mi = Y.mass();
-            if (mi <= 0.0) continue;
-
-            // Body COM in world frame
-            Eigen::Vector3d ci = oMi.act(Y.lever());
-
-            // Vector from robot COM to this body's COM
-            Eigen::Vector3d r = ci - com;
-
-            // Rotate body inertia (about its own COM) into world frame
-            Eigen::Matrix3d Ri = oMi.rotation();
-            Eigen::Matrix3d Ii = Ri * Y.inertia().matrix() * Ri.transpose();
-
-            // Parallel axis theorem: shift to robot COM
-            body_inertia_ += Ii + mi * (r.squaredNorm() * Eigen::Matrix3d::Identity() - r * r.transpose());
-        }
-
         // Build mapping: canonical JointIdx order → Pinocchio's internal q-index.
         // Pinocchio joint IDs start at 1 (0 is the "universe" joint).
         for (size_t i = 0; i < NUM_JOINTS; ++i)
@@ -131,8 +94,9 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
     pinocchio::crba(model_,data_,q_pin_);
+    // pinocchio::crba(model_,data_,q_pin_,dq_pin_); // Computes centroidal momentum and composite rigid body inertia data_.Ig
     pinocchio::computeGeneralizedGravity(model_, data_, q_pin_);
-    pinocchio::centerOfMass(model_, data_, q_pin_);
+    pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 
     // Remap gravity torques from Pinocchio order → canonical order
     gravity_canonical_.resize(NUM_JOINTS);

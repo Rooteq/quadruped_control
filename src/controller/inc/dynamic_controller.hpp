@@ -34,8 +34,8 @@ private:
     Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(15.0,  15.0,  15.0);
 
     // Walk: higher exact PD matching python
-    Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(50.0, 50.0, 50.0);
-    Eigen::Matrix3d Kd_ = Eigen::DiagonalMatrix<double,3>(7.0,  7.0,  7.0);
+    Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(80.0, 80.0, 80.0);
+    Eigen::Matrix3d Kd_ = Eigen::DiagonalMatrix<double,3>(17.0,  17.0,  17.0);
 };
 
 } // namespace quadro
