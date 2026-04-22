@@ -1,7 +1,10 @@
 #include "dynamic_controller.hpp"
+#include <algorithm>
 
 namespace quadro
 {
+
+static constexpr double STAND_TAU_MAX = 30.0;  // Nm — prevents explosion from large initial errors
 
 std::array<double, NUM_JOINTS> DynamicController::computeStand(
     const QuadroModel& model,
@@ -24,7 +27,8 @@ std::array<double, NUM_JOINTS> DynamicController::computeStand(
 
         size_t base = leg * JOINTS_PER_LEG;
         for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
-            torques[base + j] = tau_leg[j] + g[base + j];
+            // torques[base + j] = std::clamp(tau_leg[j] + g[base + j], -STAND_TAU_MAX, STAND_TAU_MAX);
+            torques[base + j] = std::clamp(tau_leg[j] + g[base + j], -STAND_TAU_MAX, STAND_TAU_MAX);
     }
 
     return torques;
@@ -54,10 +58,11 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
         if (gait.inStance(leg))
         {
             // ── Stance: τ = Jᵀ f  (Newton-Euler quasi-static) ─────
-            // J is in LOCAL_WORLD_ALIGNED frame (world axes), GRF is in world frame
+            // τ = Jᵀ·f_contact  (virtual work; GRF is force FROM ground ON robot, world frame)
             const Eigen::Vector3d tau_leg = J.transpose() * -grfs[leg];
 
             for (size_t j = 0; j < JOINTS_PER_LEG; ++j)
+                // torques[base + j] = tau_leg[j] + g[base + j];
                 torques[base + j] = tau_leg[j];
         }
         else

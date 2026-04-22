@@ -67,6 +67,15 @@ q_pin_ = pinocchio::neutral(model_);
             foot_frame_ids_[i] = model_.getFrameId(foot_frame_names[i]);
             hip_frame_ids_[i] = model_.getFrameId(hip_frame_names[i]);
         }
+
+        // Print joint mapping for verification — move joints manually to confirm ordering
+        std::printf("[JointMap] canonical_idx  pin_q  pin_v  joint_name\n");
+        for (size_t i = 0; i < NUM_JOINTS; ++i)
+        {
+            std::printf("[JointMap]     %2zu         %3d    %3d    %s\n",
+                        i, canonical_to_pin_[i], canonical_to_pin_v_[i],
+                        EXPECTED_JOINT_NAMES[i].c_str());
+        }
     }
     catch (const std::exception& e)
     {
@@ -93,8 +102,8 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::forwardKinematics(model_, data_, q_pin_, dq_pin_);
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
-    pinocchio::crba(model_,data_,q_pin_);
-    // pinocchio::crba(model_,data_,q_pin_,dq_pin_); // Computes centroidal momentum and composite rigid body inertia data_.Ig
+    pinocchio::crba(model_, data_, q_pin_);
+    pinocchio::ccrba(model_, data_, q_pin_, dq_pin_);  // populates data_.Ig (mass + inertia)
     pinocchio::computeGeneralizedGravity(model_, data_, q_pin_);
     pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 

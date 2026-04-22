@@ -23,7 +23,7 @@
   </default>
   <worldbody>
     <!-- Link back_plate -->
-    <body name="back_plate" pos="0 0 0.23" quat="1 0 0 0" childclass="robot">
+    <body name="back_plate" pos="0 0 0.3" quat="1 0 0 0" childclass="robot">
       <freejoint name="back_plate_freejoint"/> 
       <inertial pos="-3.82601e-05 -0.00496654 -0.00528261" mass="2.59053" fullinertia="0.0255846 0.00872593 0.0313278 -4.15339e-05 4e-12 -0.000207516"/>
       <!-- Part back_stop -->

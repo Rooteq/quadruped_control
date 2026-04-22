@@ -172,6 +172,9 @@ private:
 
     void mpcCallback()
     {
+        if (!controller_.isStandingComplete()) return;
+        if (controller_.model().mass() <= 0.0)  return;
+
         controller_.calculateDesiredBodyTrajectory();
 
         controller_.updateMPC();

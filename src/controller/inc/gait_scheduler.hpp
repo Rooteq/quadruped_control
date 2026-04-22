@@ -74,9 +74,10 @@ public:
         std::array<std::array<bool, NUM_LEGS>, N> table{};
         for (int k = 0; k < N; ++k)
         {
-            // Evaluate phase at the middle of the MPC step to be robust to edge transitions,
-            // exactly like python: t = t0 + np.arange(N)*dt + dt/2
-            double phase_offset_k = (k + 0.5) * mpc_dt / gait_.period;
+            // Evaluate at the START of each MPC interval so step k=0 matches inStance()
+            // exactly. Using dt/2 centering shifted k=0 ahead by half a step, causing
+            // inStance() and contactTable()[0] to disagree during every gait transition.
+            double phase_offset_k = k * mpc_dt / gait_.period;
             
             for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
             {
