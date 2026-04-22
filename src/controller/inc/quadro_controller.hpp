@@ -47,7 +47,6 @@ public:
 
     std::array<double, NUM_JOINTS> calculateStand(double t)
     {
-        // Latch start time and capture actual foot positions on first call
         if (stand_start_time_ < 0.0)
         {
             stand_start_time_ = t;
@@ -55,30 +54,25 @@ public:
                 foot_start_pos_[leg] = quadro_model_.footPosition(leg);
         }
 
-        const double elapsed = t - stand_start_time_;
-        // Smooth cubic ramp: slow start, slow end — avoids impulse on first step
+        const double elapsed   = t - stand_start_time_;
         const double alpha_raw = std::min(elapsed / STAND_LOWER_DURATION, 1.0);
-        const double alpha = alpha_raw * alpha_raw * (3.0 - 2.0 * alpha_raw);
+        const double alpha     = alpha_raw * alpha_raw * (3.0 - 2.0 * alpha_raw);
 
-        // Body-frame nominal foot position (hardcoded hip offset + leg extension),
-        // rotated to world frame. This is the user-validated Raibert reference point.
         const auto& x0 = quadro_model_.stateVector();
         Eigen::Vector3d base_pos(x0[3], x0[4], x0[5]);
-        const Eigen::Matrix3d& R_z = quadro_model_.bodyYawRotation();
+        const Eigen::Matrix3d& R_bw = quadro_model_.bodyToWorldRotation();
 
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
         {
-            // nominalFootPosition = {hipPos[leg].xy, NOMINAL_HEIGHT=-0.27}
-            // base_pos + R_z * nominal → target_world.z = base_z + (-0.27)
-            // Error grows as body rises, vanishes exactly when body reaches 0.27m
-            Eigen::Vector3d nominal     = trajectory_generator_.nominalFootPosition(leg);
-            Eigen::Vector3d target_world = base_pos + R_z * nominal;
+            // Desired foot in body frame: hipPos xy + nominal stand height
+            Eigen::Vector3d p_des_body = trajectory_generator_.nominalFootPosition(leg);
+            Eigen::Vector3d p_des_world = base_pos + R_bw * p_des_body;
+
             leg_targets_for_stand_[leg].foot_pos =
-                (1.0 - alpha) * foot_start_pos_[leg] + alpha * target_world;
+                (1.0 - alpha) * foot_start_pos_[leg] + alpha * p_des_world;
             leg_targets_for_stand_[leg].foot_vel = Eigen::Vector3d::Zero();
         }
 
-        // Hold for STAND_HOLD_DURATION after ramp completes, then hand off
         if (!standing_complete_ && alpha >= 1.0)
         {
             if (settle_time_ < 0.0) settle_time_ = t;

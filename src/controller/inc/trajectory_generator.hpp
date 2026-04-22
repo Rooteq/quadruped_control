@@ -60,7 +60,8 @@ private:
         const GaitScheduler& gait,
         int leg_idx,
         const Eigen::Vector3d& current_vel,
-        const Eigen::Vector3d& desired_vel) const;
+        const Eigen::Vector3d& desired_vel,
+        double yaw_rate_des) const;
 
     /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;
