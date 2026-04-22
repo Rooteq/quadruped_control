@@ -60,15 +60,19 @@ public:
         const double alpha_raw = std::min(elapsed / STAND_LOWER_DURATION, 1.0);
         const double alpha = alpha_raw * alpha_raw * (3.0 - 2.0 * alpha_raw);
 
+        // Body-frame nominal foot position (hardcoded hip offset + leg extension),
+        // rotated to world frame. This is the user-validated Raibert reference point.
+        const auto& x0 = quadro_model_.stateVector();
+        Eigen::Vector3d base_pos(x0[3], x0[4], x0[5]);
+        const Eigen::Matrix3d& R_z = quadro_model_.bodyYawRotation();
+
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
         {
-            // Target foot directly below its hip at nominal leg extension.
-            // Using hip_z + NOMINAL_HEIGHT for z creates the extension force that
-            // lifts the body: when flat (hip≈0), target_z≈-0.27 → foot error pushes
-            // legs down → body rises. When upright (hip≈0.27), target_z≈0 → no error.
-            Eigen::Vector3d hip_world = quadro_model_.hipPosition(leg);
-            double target_z = hip_world.z() + TrajectoryGenerator::NOMINAL_HEIGHT;
-            Eigen::Vector3d target_world(hip_world.x(), hip_world.y(), target_z);
+            // nominalFootPosition = {hipPos[leg].xy, NOMINAL_HEIGHT=-0.27}
+            // base_pos + R_z * nominal → target_world.z = base_z + (-0.27)
+            // Error grows as body rises, vanishes exactly when body reaches 0.27m
+            Eigen::Vector3d nominal     = trajectory_generator_.nominalFootPosition(leg);
+            Eigen::Vector3d target_world = base_pos + R_z * nominal;
             leg_targets_for_stand_[leg].foot_pos =
                 (1.0 - alpha) * foot_start_pos_[leg] + alpha * target_world;
             leg_targets_for_stand_[leg].foot_vel = Eigen::Vector3d::Zero();
@@ -178,7 +182,7 @@ private:
     double settle_time_          = -1.0;
 
     static constexpr double STAND_LOWER_DURATION = 3.0;  // seconds to reach nominal height
-    static constexpr double STAND_HOLD_DURATION  = 0.5;  // seconds to hold before walking
+    static constexpr double STAND_HOLD_DURATION  = 4.5;  // seconds to hold before walking
 
     // Reference trajectory — HORIZON_STEPS × 13-state vectors
     // x_ref_[n] = desired state at prediction step n
