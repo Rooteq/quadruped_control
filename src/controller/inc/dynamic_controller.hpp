@@ -30,8 +30,8 @@ public:
 
 private:
     // Stand: Cartesian PD gains — needs Kp*err > mg/4 per leg (~17 N for 7 kg robot)
-    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(300.0, 300.0, 300.0);
-    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(10.0,  10.0,  10.0);
+    Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(200.0, 200.0, 200.0);
+    Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(20.0,  20.0,  20.0);
 
     // Walk: higher exact PD matching python
     Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(80.0, 80.0, 80.0);
