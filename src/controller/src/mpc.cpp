@@ -83,11 +83,11 @@ void MPC::calculateDynamicsMatrices()
             const Eigen::Vector3d r        = foot_positions_[i] - com_pos_n;
             const Eigen::Matrix3d I_inv_sk = I_hat_inv * skewSymmetric(r);
 
-            // Bc: continuous-time input map
+            // Bc: continuous-time input map (12×12, no gravity row)
             Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // Δω rows
             Bc_[n].block<3, 3>(9, 3 * i) = I3_over_m;  // Δv rows
 
-            // Bd: ZOH with 2nd-order terms
+            // Bd: ZOH with 2nd-order terms (12×12)
             Bd_[n].block<3, 3>(6, 3 * i) = MPC_DT * I_inv_sk;
             Bd_[n].block<3, 3>(9, 3 * i) = MPC_DT * I3_over_m;
             Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_n_T * I_inv_sk;  // RPY 2nd-order
