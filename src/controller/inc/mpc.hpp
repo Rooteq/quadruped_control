@@ -157,6 +157,15 @@ private:
     // Previous contact schedule — used to detect transitions and invalidate warm start
     std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS> prev_contact_schedule_{};
 
+    // CasADi/OSQP conic solver (run_casadi) — cached across calls
+    casadi::Function casadi_solver_;
+    casadi::DM       casadi_H_dm_;
+    casadi::DM       casadi_z_warm_;
+    casadi::DM       casadi_lam_x_warm_;
+    casadi::DM       casadi_lam_a_warm_;
+    bool             casadi_solver_built_ = false;
+    bool             has_casadi_warm_     = false;
+
     int print_counter_ = 0;
 
     static Eigen::Matrix3d skewSymmetric(const Eigen::Vector3d& v);

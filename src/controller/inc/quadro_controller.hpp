@@ -106,8 +106,8 @@ public:
     /// Caller must hold grf_mutex_ around this call.
     void runMPC()
     {
-        // mpc_.run_casadi(); // mpc_.run();
-        mpc_.run();
+        mpc_.run_casadi(); // mpc_.run();
+        // mpc_.run();
         grfs_ = mpc_.groundReactionForces();
     }
 
