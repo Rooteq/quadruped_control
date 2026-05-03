@@ -23,62 +23,64 @@
   </default>
   <worldbody>
     <!-- Link back_plate -->
+    <!-- <body name="back_plate" pos="0 0 0.3" quat="1 0 0 0" childclass="robot">
+      <freejoint name="back_plate_freejoint"/>  -->
     <body name="back_plate" pos="0 0 0.3" quat="1 0 0 0" childclass="robot">
-      <freejoint name="back_plate_freejoint"/> 
-      <inertial pos="-3.82601e-05 -0.00496654 -0.00528261" mass="2.59053" fullinertia="0.0255846 0.00872593 0.0313278 -4.15339e-05 4e-12 -0.000207516"/>
+      <freejoint name="back_plate_freejoint"/>
+      <inertial pos="0.0139665 -3.82601e-05 -0.0137826" mass="2.59053" fullinertia="0.00872593 0.0255846 0.0313278 4.15339e-05 0.000207516 8e-12"/>
       <!-- Part back_stop -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 -0.0454675 -0.0499927" quat="1 0 4.64e-10 0" mesh="back_stop" material="back_stop_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 -0.0454675 -0.0499927" quat="1 0 4.64e-10 0" mesh="back_stop" material="back_stop_material"/>
+      <geom type="mesh" class="visual" pos="0.0544675 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="back_stop" material="back_stop_material"/>
+      <geom type="mesh" class="collision" pos="0.0544675 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="back_stop" material="back_stop_material"/>
       <!-- Part side_pipe -->
-      <geom type="mesh" class="visual" pos="-0.147986 0.0936325 -0.0499927" quat="1 0 4.64e-10 0" mesh="side_pipe" material="side_pipe_material"/>
-      <geom type="mesh" class="collision" pos="-0.147986 0.0936325 -0.0499927" quat="1 0 4.64e-10 0" mesh="side_pipe" material="side_pipe_material"/>
+      <geom type="mesh" class="visual" pos="-0.0846325 -0.147986 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="side_pipe" material="side_pipe_material"/>
+      <geom type="mesh" class="collision" pos="-0.0846325 -0.147986 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="side_pipe" material="side_pipe_material"/>
       <!-- Part side_cover -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 -0.0933675 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="side_cover" material="side_cover_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 -0.0933675 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="side_cover" material="side_cover_material"/>
+      <geom type="mesh" class="visual" pos="0.102368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="side_cover" material="side_cover_material"/>
+      <geom type="mesh" class="collision" pos="0.102368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="side_cover" material="side_cover_material"/>
       <!-- Part back_plate -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 0.0936325 -0.0499927" quat="1 -0 4.64e-10 -0" mesh="back_plate" material="back_plate_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 0.0936325 -0.0499927" quat="1 -0 4.64e-10 -0" mesh="back_plate" material="back_plate_material"/>
+      <geom type="mesh" class="visual" pos="-0.0846325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="back_plate" material="back_plate_material"/>
+      <geom type="mesh" class="collision" pos="-0.0846325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="back_plate" material="back_plate_material"/>
       <!-- Part battery -->
-      <geom type="mesh" class="visual" pos="0.0664617 -0.0438675 -0.0209927" quat="0.707107 3.28e-10 3.28e-10 0.707107" mesh="battery" material="battery_material"/>
-      <geom type="mesh" class="collision" pos="0.0664617 -0.0438675 -0.0209927" quat="0.707107 3.28e-10 3.28e-10 0.707107" mesh="battery" material="battery_material"/>
+      <geom type="mesh" class="visual" pos="0.0528675 0.0664617 -0.0294927" quat="0 0 -8.26e-10 -1" mesh="battery" material="battery_material"/>
+      <geom type="mesh" class="collision" pos="0.0528675 0.0664617 -0.0294927" quat="0 0 -8.26e-10 -1" mesh="battery" material="battery_material"/>
       <!-- Part motor -->
-      <geom type="mesh" class="visual" pos="-0.0550383 -0.104368 7.33851e-06" quat="3.28e-10 0.707107 -0.707107 -3.28e-10" mesh="motor" material="motor_material"/>
-      <geom type="mesh" class="collision" pos="-0.0550383 -0.104368 7.33851e-06" quat="3.28e-10 0.707107 -0.707107 -3.28e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="visual" pos="0.113368 -0.0550383 -0.00849266" quat="8.26e-10 1 0 0" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="collision" pos="0.113368 -0.0550383 -0.00849266" quat="8.26e-10 1 0 0" mesh="motor" material="motor_material"/>
       <!-- Part side_cover_2 -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 0.0936325 -0.0499927" quat="1 0 4.64e-10 0" mesh="side_cover" material="side_cover_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 0.0936325 -0.0499927" quat="1 0 4.64e-10 0" mesh="side_cover" material="side_cover_material"/>
+      <geom type="mesh" class="visual" pos="-0.0846325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="side_cover" material="side_cover_material"/>
+      <geom type="mesh" class="collision" pos="-0.0846325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="side_cover" material="side_cover_material"/>
       <!-- Part motor_2 -->
-      <geom type="mesh" class="visual" pos="-0.0550383 0.104632 7.33851e-06" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="motor" material="motor_material"/>
-      <geom type="mesh" class="collision" pos="-0.0550383 0.104632 7.33851e-06" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="visual" pos="-0.0956325 -0.0550383 -0.00849266" quat="0 -0 1 -8.26e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="collision" pos="-0.0956325 -0.0550383 -0.00849266" quat="0 -0 1 -8.26e-10" mesh="motor" material="motor_material"/>
       <!-- Part motor_3 -->
-      <geom type="mesh" class="visual" pos="0.0549617 -0.104368 7.33841e-06" quat="3.28e-10 0.707107 -0.707107 -3.28e-10" mesh="motor" material="motor_material"/>
-      <geom type="mesh" class="collision" pos="0.0549617 -0.104368 7.33841e-06" quat="3.28e-10 0.707107 -0.707107 -3.28e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="visual" pos="0.113368 0.0549617 -0.00849266" quat="8.26e-10 1 0 0" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="collision" pos="0.113368 0.0549617 -0.00849266" quat="8.26e-10 1 0 0" mesh="motor" material="motor_material"/>
       <!-- Part bot_pipe_half -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 0.427632 -0.0499927" quat="0 1 -0 -4.64e-10" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 0.427632 -0.0499927" quat="0 1 -0 -4.64e-10" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
+      <geom type="mesh" class="visual" pos="-0.418632 -3.82602e-05 -0.0584927" quat="5.84e-10 0.707107 0.707107 -5.84e-10" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
+      <geom type="mesh" class="collision" pos="-0.418632 -3.82602e-05 -0.0584927" quat="5.84e-10 0.707107 0.707107 -5.84e-10" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
       <!-- Part side_pipe_2 -->
-      <geom type="mesh" class="visual" pos="-3.826e-05 -0.0933675 0.104007" quat="0 1 -0 -4.64e-10" mesh="side_pipe" material="side_pipe_material"/>
-      <geom type="mesh" class="collision" pos="-3.826e-05 -0.0933675 0.104007" quat="0 1 -0 -4.64e-10" mesh="side_pipe" material="side_pipe_material"/>
+      <geom type="mesh" class="visual" pos="0.102368 -3.826e-05 0.0955073" quat="5.84e-10 0.707107 0.707107 -5.84e-10" mesh="side_pipe" material="side_pipe_material"/>
+      <geom type="mesh" class="collision" pos="0.102368 -3.826e-05 0.0955073" quat="5.84e-10 0.707107 0.707107 -5.84e-10" mesh="side_pipe" material="side_pipe_material"/>
       <!-- Part motor_4 -->
-      <geom type="mesh" class="visual" pos="0.0549617 0.104632 7.33841e-06" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="motor" material="motor_material"/>
-      <geom type="mesh" class="collision" pos="0.0549617 0.104632 7.33841e-06" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="visual" pos="-0.0956325 0.0549617 -0.00849266" quat="0 -0 1 -8.26e-10" mesh="motor" material="motor_material"/>
+      <geom type="mesh" class="collision" pos="-0.0956325 0.0549617 -0.00849266" quat="0 -0 1 -8.26e-10" mesh="motor" material="motor_material"/>
       <!-- Part back_stop_2 -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 0.0457325 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="back_stop" material="back_stop_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 0.0457325 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="back_stop" material="back_stop_material"/>
+      <geom type="mesh" class="visual" pos="-0.0367325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="back_stop" material="back_stop_material"/>
+      <geom type="mesh" class="collision" pos="-0.0367325 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="back_stop" material="back_stop_material"/>
       <!-- Part back_plate_2 -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 -0.0933675 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="back_plate" material="back_plate_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 -0.0933675 -0.0499927" quat="0 -4.64e-10 -0 -1" mesh="back_plate" material="back_plate_material"/>
+      <geom type="mesh" class="visual" pos="0.102368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="back_plate" material="back_plate_material"/>
+      <geom type="mesh" class="collision" pos="0.102368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 -5.84e-10 -0.707107" mesh="back_plate" material="back_plate_material"/>
       <!-- Part bot_pipe_half_2 -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 -0.427368 -0.0499927" quat="1 0 4.64e-10 0" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 -0.427368 -0.0499927" quat="1 0 4.64e-10 0" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
+      <geom type="mesh" class="visual" pos="0.436368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
+      <geom type="mesh" class="collision" pos="0.436368 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="bot_pipe_half" material="bot_pipe_half_material"/>
       <!-- Part mid_clamp -->
-      <geom type="mesh" class="visual" pos="-3.82602e-05 0.233232 -0.0499927" quat="1 0 4.64e-10 0" mesh="mid_clamp" material="mid_clamp_material"/>
-      <geom type="mesh" class="collision" pos="-3.82602e-05 0.233232 -0.0499927" quat="1 0 4.64e-10 0" mesh="mid_clamp" material="mid_clamp_material"/>
+      <geom type="mesh" class="visual" pos="-0.224232 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="mid_clamp" material="mid_clamp_material"/>
+      <geom type="mesh" class="collision" pos="-0.224232 -3.82602e-05 -0.0584927" quat="0.707107 -5.84e-10 5.84e-10 0.707107" mesh="mid_clamp" material="mid_clamp_material"/>
       <!-- Part battery_2 -->
-      <geom type="mesh" class="visual" pos="-0.0665383 -0.0438675 -0.0209927" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="battery" material="battery_material"/>
-      <geom type="mesh" class="collision" pos="-0.0665383 -0.0438675 -0.0209927" quat="3.28e-10 -0.707107 -0.707107 3.28e-10" mesh="battery" material="battery_material"/>
+      <geom type="mesh" class="visual" pos="0.0528675 -0.0665383 -0.0294927" quat="0 -0 1 -8.26e-10" mesh="battery" material="battery_material"/>
+      <geom type="mesh" class="collision" pos="0.0528675 -0.0665383 -0.0294927" quat="0 -0 1 -8.26e-10" mesh="battery" material="battery_material"/>
       <!-- Link shaft -->
-      <body name="shaft" pos="-0.0550383 0.114632 7.33851e-06" quat="0 0 -0.707107 0.707107">
+      <body name="shaft" pos="-0.105632 -0.0550383 -0.00849266" quat="0.5 -0.5 0.5 -0.5">
         <!-- Joint from back_plate to shaft -->
         <joint axis="0 0 1" name="br_m1_s1" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
         <inertial pos="-0.00474046 0.00407901 -0.0612986" mass="0.452938" fullinertia="0.000550761 0.00055728 0.000239291 -6.00381e-05 -1.13918e-05 1.18589e-05"/>
@@ -89,25 +91,25 @@
         <geom type="mesh" class="visual" pos="-0.0120208 0.0120208 -0.0735" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="motor" material="motor_material"/>
         <geom type="mesh" class="collision" pos="-0.0120208 0.0120208 -0.0735" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="motor" material="motor_material"/>
         <!-- Part shaft -->
-        <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
-        <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+        <geom type="mesh" class="visual" pos="-0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+        <geom type="mesh" class="collision" pos="-0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
         <!-- Link shaft_2 -->
         <body name="shaft_2" pos="-0.00494975 0.00494975 -0.0735" quat="0.270598 -0.653281 0.270598 0.653281">
           <!-- Joint from shaft to shaft_2 -->
           <joint axis="0 0 1" name="br_m2_s2" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
           <inertial pos="0.00931177 -0.00187407 -0.0491985" mass="0.524841" fullinertia="0.000439148 0.000912333 0.000883052 6.14395e-05 0.000140002 -3.78102e-05"/>
           <!-- Part bot_r -->
-          <geom type="mesh" class="visual" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="bot_r" material="bot_r_material"/>
-          <geom type="mesh" class="collision" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="bot_r" material="bot_r_material"/>
+          <geom type="mesh" class="visual" pos="0 -0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="bot_r" material="bot_r_material"/>
+          <geom type="mesh" class="collision" pos="0 -0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="bot_r" material="bot_r_material"/>
           <!-- Part top_r -->
-          <geom type="mesh" class="visual" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
-          <geom type="mesh" class="collision" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
+          <geom type="mesh" class="visual" pos="0 -0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
+          <geom type="mesh" class="collision" pos="0 -0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
           <!-- Part shaft_2 -->
           <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <!-- Part lin_2_br -->
-          <geom type="mesh" class="visual" pos="0 0 0.0305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_br" material="lin_2_br_material"/>
-          <geom type="mesh" class="collision" pos="0 0 0.0305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_br" material="lin_2_br_material"/>
+          <geom type="mesh" class="visual" pos="0 -0 0.0305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_br" material="lin_2_br_material"/>
+          <geom type="mesh" class="collision" pos="0 -0 0.0305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_br" material="lin_2_br_material"/>
           <!-- Part motor_6 -->
           <geom type="mesh" class="visual" pos="0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
           <geom type="mesh" class="collision" pos="0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
@@ -120,40 +122,40 @@
             <geom type="mesh" class="visual" pos="0.0388909 0.0388909 -0.032" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="bearing" material="bearing_material"/>
             <geom type="mesh" class="collision" pos="0.0388909 0.0388909 -0.032" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="bearing" material="bearing_material"/>
             <!-- Part shaft_3 -->
-            <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
-            <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+            <geom type="mesh" class="visual" pos="-0 -0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+            <geom type="mesh" class="collision" pos="-0 -0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
             <!-- Part mid_r -->
-            <geom type="mesh" class="visual" pos="-0 -0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
-            <geom type="mesh" class="collision" pos="-0 -0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
+            <geom type="mesh" class="visual" pos="-0 0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
+            <geom type="mesh" class="collision" pos="-0 0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
           </body>
           <!-- Link l4_r -->
-          <body name="l4_r" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 -0 0 -0.48481">
+          <body name="l4_r" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 0 0 -0.48481">
             <!-- Joint from shaft_2 to l4_r -->
             <joint axis="0 0 1" name="br_l4_l3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00103938 -0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 -3.74948e-07 4.07464e-07 -6.18739e-06"/>
             <!-- Part l4_r -->
-            <geom type="mesh" class="visual" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 0 -0" mesh="l4_r" material="l4_r_material"/>
-            <geom type="mesh" class="collision" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 0 -0" mesh="l4_r" material="l4_r_material"/>
+            <geom type="mesh" class="visual" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 -0 0" mesh="l4_r" material="l4_r_material"/>
+            <geom type="mesh" class="collision" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 -0 0" mesh="l4_r" material="l4_r_material"/>
             <!-- Part bearing_2 -->
-            <geom type="mesh" class="visual" pos="0 0.055 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="0 0.055 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="-0 0.055 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="-0 0.055 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
             <!-- Part bearing_3 -->
-            <geom type="mesh" class="visual" pos="0 0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="0 0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="-0 0 -0.008" quat="0.707107 -0.707107 -0 -0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="-0 0 -0.008" quat="0.707107 -0.707107 -0 -0" mesh="bearing" material="bearing_material"/>
             <!-- Link feet -->
-            <body name="feet" pos="0 -0.163 -0.004" quat="0.707107 -0.707107 0 0">
+            <body name="feet" pos="-0 -0.163 -0.004" quat="0.707107 -0.707107 0 0">
               <!-- Joint from l4_r to feet -->
               <!-- Joint is "fixed", skipping it -->
               <inertial pos="-5.89463e-07 5.84139e-05 0.00137833" mass="0.0122519" fullinertia="9.79775e-07 1.11956e-06 1.18164e-06 5e-12 6.2e-11 -3.871e-09"/>
               <!-- Part feet -->
-              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 0 0 0" mesh="feet" material="feet_material"/>
-              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 0 0 0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 0 0 -0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 0 0 -0" mesh="feet" material="feet_material"/>
             </body>
           </body>
         </body>
       </body>
       <!-- Link shaft_4 -->
-      <body name="shaft_4" pos="0.0549617 0.114632 7.33841e-06" quat="0 0 -0.707107 0.707107">
+      <body name="shaft_4" pos="-0.105632 0.0549617 -0.00849266" quat="0.5 -0.5 0.5 -0.5">
         <!-- Joint from back_plate to shaft_4 -->
         <joint axis="0 0 1" name="bl_m1_s1" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
         <inertial pos="0.00473706 0.0040862 -0.0608763" mass="0.453012" fullinertia="0.000546146 0.000552555 0.000239462 6.01031e-05 1.17627e-05 1.15907e-05"/>
@@ -175,19 +177,19 @@
           <geom type="mesh" class="visual" pos="0 0 -0.0195" quat="0.704416 0.704416 -0.0616284 -0.0616284" mesh="lin_2_bl" material="lin_2_bl_material"/>
           <geom type="mesh" class="collision" pos="0 0 -0.0195" quat="0.704416 0.704416 -0.0616284 -0.0616284" mesh="lin_2_bl" material="lin_2_bl_material"/>
           <!-- Part top_l -->
-          <geom type="mesh" class="visual" pos="0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="top_l" material="top_l_material"/>
-          <geom type="mesh" class="collision" pos="0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="top_l" material="top_l_material"/>
+          <geom type="mesh" class="visual" pos="-0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="top_l" material="top_l_material"/>
+          <geom type="mesh" class="collision" pos="-0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="top_l" material="top_l_material"/>
           <!-- Part motor_8 -->
           <geom type="mesh" class="visual" pos="0 0 -0.0395" quat="0.541675 -0.454519 0.541675 0.454519" mesh="motor" material="motor_material"/>
           <geom type="mesh" class="collision" pos="0 0 -0.0395" quat="0.541675 -0.454519 0.541675 0.454519" mesh="motor" material="motor_material"/>
           <!-- Part bot_l -->
-          <geom type="mesh" class="visual" pos="0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="bot_l" material="bot_l_material"/>
-          <geom type="mesh" class="collision" pos="0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="bot_l" material="bot_l_material"/>
+          <geom type="mesh" class="visual" pos="-0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="bot_l" material="bot_l_material"/>
+          <geom type="mesh" class="collision" pos="-0 0 -0.0725" quat="0.67438 0.67438 0.212631 0.212631" mesh="bot_l" material="bot_l_material"/>
           <!-- Part shaft_5 -->
           <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <!-- Link shaft_6 -->
-          <body name="shaft_6" pos="-0 0 -0.0495" quat="0.366501 -0 -0 -0.930418">
+          <body name="shaft_6" pos="0 0 -0.0495" quat="0.366501 -0 0 -0.930418">
             <!-- Joint from shaft_5 to shaft_6 -->
             <joint axis="0 0 1" name="bl_m3_s3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="-0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 2.3154e-05 -1.04189e-05 1.04189e-05"/>
@@ -198,8 +200,8 @@
             <geom type="mesh" class="visual" pos="0 -0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
             <geom type="mesh" class="collision" pos="0 -0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
             <!-- Part mid_l -->
-            <geom type="mesh" class="visual" pos="0 0 -0.014" quat="0.270598 0.270598 -0.653281 -0.653281" mesh="mid_l" material="mid_l_material"/>
-            <geom type="mesh" class="collision" pos="0 0 -0.014" quat="0.270598 0.270598 -0.653281 -0.653281" mesh="mid_l" material="mid_l_material"/>
+            <geom type="mesh" class="visual" pos="0 -0 -0.014" quat="0.270598 0.270598 -0.653281 -0.653281" mesh="mid_l" material="mid_l_material"/>
+            <geom type="mesh" class="collision" pos="0 -0 -0.014" quat="0.270598 0.270598 -0.653281 -0.653281" mesh="mid_l" material="mid_l_material"/>
           </body>
           <!-- Link l4_l -->
           <body name="l4_l" pos="0.129917 0.0934105 -0.0735" quat="0.71934 -0 0 0.694658">
@@ -213,22 +215,22 @@
             <geom type="mesh" class="visual" pos="-0 -0.055 -0.008" quat="0.707107 -0.707107 -0 0" mesh="bearing" material="bearing_material"/>
             <geom type="mesh" class="collision" pos="-0 -0.055 -0.008" quat="0.707107 -0.707107 -0 0" mesh="bearing" material="bearing_material"/>
             <!-- Part l4_l -->
-            <geom type="mesh" class="visual" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 0 -0" mesh="l4_l" material="l4_l_material"/>
-            <geom type="mesh" class="collision" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 0 -0" mesh="l4_l" material="l4_l_material"/>
+            <geom type="mesh" class="visual" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 -0 -0" mesh="l4_l" material="l4_l_material"/>
+            <geom type="mesh" class="collision" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 -0 -0" mesh="l4_l" material="l4_l_material"/>
             <!-- Link feet_2 -->
-            <body name="feet_2" pos="-0 0.163 -0.004" quat="0 0 -0.707107 0.707107">
+            <body name="feet_2" pos="0 0.163 -0.004" quat="0 -0 0.707107 -0.707107">
               <!-- Joint from l4_l to feet_2 -->
               <!-- Joint is "fixed", skipping it -->
               <inertial pos="-5.89463e-07 5.84139e-05 0.00137833" mass="0.0122519" fullinertia="9.79775e-07 1.11956e-06 1.18164e-06 5e-12 6.2e-11 -3.871e-09"/>
               <!-- Part feet_2 -->
-              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 0 0 -0" mesh="feet" material="feet_material"/>
-              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 0 0 -0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 0 -0 0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 0 -0 0" mesh="feet" material="feet_material"/>
             </body>
           </body>
         </body>
       </body>
       <!-- Link shaft_7 -->
-      <body name="shaft_7" pos="-0.0550383 -0.114368 7.33851e-06" quat="0 -0 0.707107 0.707107">
+      <body name="shaft_7" pos="0.123368 -0.0550383 -0.00849266" quat="0.5 0.5 -0.5 -0.5">
         <!-- Joint from back_plate to shaft_7 -->
         <joint axis="0 0 1" name="fr_m1_s1" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
         <inertial pos="-0.00469968 -0.00412358 -0.0608763" mass="0.453012" fullinertia="0.000545527 0.000553194 0.000239482 6.01135e-05 -1.23936e-05 -1.09597e-05"/>
@@ -247,14 +249,14 @@
           <joint axis="0 0 1" name="fr_m2_s2" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
           <inertial pos="0.00960955 -0.00201737 -0.0491732" mass="0.525416" fullinertia="0.000440202 0.000909648 0.000880794 6.05777e-05 0.000136109 -3.55951e-05"/>
           <!-- Part lin_2_fr -->
-          <geom type="mesh" class="visual" pos="0 0 0.1305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_fr" material="lin_2_fr_material"/>
-          <geom type="mesh" class="collision" pos="0 0 0.1305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_fr" material="lin_2_fr_material"/>
+          <geom type="mesh" class="visual" pos="0 -0 0.1305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_fr" material="lin_2_fr_material"/>
+          <geom type="mesh" class="collision" pos="0 -0 0.1305" quat="0.664463 -0.664463 -0.241845 0.241845" mesh="lin_2_fr" material="lin_2_fr_material"/>
           <!-- Part motor_10 -->
-          <geom type="mesh" class="visual" pos="-0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
-          <geom type="mesh" class="collision" pos="-0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
+          <geom type="mesh" class="visual" pos="0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
+          <geom type="mesh" class="collision" pos="0 -0 -0.0395" quat="0.640856 0.298836 0.640856 -0.298836" mesh="motor" material="motor_material"/>
           <!-- Part top_r_2 -->
-          <geom type="mesh" class="visual" pos="-0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
-          <geom type="mesh" class="collision" pos="-0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
+          <geom type="mesh" class="visual" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
+          <geom type="mesh" class="collision" pos="0 0 0.1275" quat="0.706434 -0.706434 0.0308436 -0.0308436" mesh="top_r" material="top_r_material"/>
           <!-- Part shaft_8 -->
           <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
@@ -267,43 +269,43 @@
             <joint axis="0 0 1" name="fr_m3_s3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 -2.3154e-05 1.04189e-05 1.04189e-05"/>
             <!-- Part mid_r_2 -->
-            <geom type="mesh" class="visual" pos="0 0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
-            <geom type="mesh" class="collision" pos="0 0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
+            <geom type="mesh" class="visual" pos="0 -0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
+            <geom type="mesh" class="collision" pos="0 -0 0.186" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="mid_r" material="mid_r_material"/>
             <!-- Part bearing_7 -->
             <geom type="mesh" class="visual" pos="0.0388909 0.0388909 -0.032" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="bearing" material="bearing_material"/>
             <geom type="mesh" class="collision" pos="0.0388909 0.0388909 -0.032" quat="0.653281 -0.653281 0.270598 -0.270598" mesh="bearing" material="bearing_material"/>
             <!-- Part shaft_9 -->
-            <geom type="mesh" class="visual" pos="-0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
-            <geom type="mesh" class="collision" pos="-0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+            <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
+            <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           </body>
           <!-- Link l4_r_2 -->
-          <body name="l4_r_2" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 -0 -0 -0.48481">
+          <body name="l4_r_2" pos="0.159217 -0.0159373 -0.0735" quat="0.87462 0 0 -0.48481">
             <!-- Joint from shaft_8 to l4_r_2 -->
             <joint axis="0 0 1" name="fr_l4_l3" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
             <inertial pos="0.00103938 -0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 -3.74948e-07 4.07464e-07 -6.18739e-06"/>
             <!-- Part bearing_8 -->
-            <geom type="mesh" class="visual" pos="-0 0 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="-0 0 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="0 -0 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="0 -0 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
             <!-- Part bearing_9 -->
-            <geom type="mesh" class="visual" pos="-0 0.055 0" quat="0 -0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="-0 0.055 0" quat="0 -0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="0 0.055 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="0 0.055 0" quat="0 0 -0.707107 -0.707107" mesh="bearing" material="bearing_material"/>
             <!-- Part l4_r_2 -->
-            <geom type="mesh" class="visual" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 0 0" mesh="l4_r" material="l4_r_material"/>
-            <geom type="mesh" class="collision" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 0 0" mesh="l4_r" material="l4_r_material"/>
+            <geom type="mesh" class="visual" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 -0 0" mesh="l4_r" material="l4_r_material"/>
+            <geom type="mesh" class="collision" pos="-0.16 0.002 0.192" quat="0.707107 -0.707107 -0 0" mesh="l4_r" material="l4_r_material"/>
             <!-- Link feet_3 -->
-            <body name="feet_3" pos="-0 -0.163 -0.004" quat="0.707107 -0.707107 0 0">
+            <body name="feet_3" pos="-0 -0.163 -0.004" quat="0.707107 -0.707107 0 -0">
               <!-- Joint from l4_r_2 to feet_3 -->
               <!-- Joint is "fixed", skipping it -->
               <inertial pos="-5.89463e-07 5.84139e-05 0.00137833" mass="0.0122519" fullinertia="9.79775e-07 1.11956e-06 1.18164e-06 5e-12 6.2e-11 -3.871e-09"/>
               <!-- Part feet_3 -->
-              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 -0 0 -0" mesh="feet" material="feet_material"/>
-              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 -0 0 -0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 -0 -0 0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 -0 -0 0" mesh="feet" material="feet_material"/>
             </body>
           </body>
         </body>
       </body>
       <!-- Link motor -->
-      <body name="motor" pos="0.0549617 -0.114368 7.33841e-06" quat="0 -0 0.707107 0.707107">
+      <body name="motor" pos="0.123368 0.0549617 -0.00849266" quat="0.5 0.5 -0.5 -0.5">
         <!-- Joint from back_plate to motor -->
         <joint axis="0 0 1" name="fl_m1_s1" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
         <inertial pos="0.00470307 -0.0041164 -0.0612986" mass="0.452937" fullinertia="0.000550142 0.00055792 0.000239312 -6.00486e-05 1.20299e-05 -1.12208e-05"/>
@@ -322,8 +324,8 @@
           <joint axis="0 0 1" name="fl_m2_s2" type="hinge" range="0.0 1.22173048" frictionloss="0.00"/>
           <inertial pos="-0.00935089 -0.00223441 -0.0491732" mass="0.525416" fullinertia="0.000439621 0.000912321 0.000882886 -5.98025e-05 -0.000135732 -3.59112e-05"/>
           <!-- Part motor_12 -->
-          <geom type="mesh" class="visual" pos="0 -0 -0.0395" quat="0.298836 0.640856 0.298836 -0.640856" mesh="motor" material="motor_material"/>
-          <geom type="mesh" class="collision" pos="0 -0 -0.0395" quat="0.298836 0.640856 0.298836 -0.640856" mesh="motor" material="motor_material"/>
+          <geom type="mesh" class="visual" pos="0 0 -0.0395" quat="0.298836 0.640856 0.298836 -0.640856" mesh="motor" material="motor_material"/>
+          <geom type="mesh" class="collision" pos="0 0 -0.0395" quat="0.298836 0.640856 0.298836 -0.640856" mesh="motor" material="motor_material"/>
           <!-- Part lin_2_fl -->
           <geom type="mesh" class="visual" pos="-0 0 0.0805" quat="0.241845 0.241845 0.664463 0.664463" mesh="lin_2_fl" material="lin_2_fl_material"/>
           <geom type="mesh" class="collision" pos="-0 0 0.0805" quat="0.241845 0.241845 0.664463 0.664463" mesh="lin_2_fl" material="lin_2_fl_material"/>
@@ -337,7 +339,7 @@
           <geom type="mesh" class="visual" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <geom type="mesh" class="collision" pos="0 0 0.01" quat="0.5 0.5 0.5 -0.5" mesh="shaft" material="shaft_material"/>
           <!-- Link shaft_10 -->
-          <body name="shaft_10" pos="0 0 -0.0495" quat="0.993572 -0 0 0.113203">
+          <body name="shaft_10" pos="0 -0 -0.0495" quat="0.993572 -0 -0 0.113203">
             <!-- Joint from motor_2 to shaft_10 -->
             <joint axis="0 0 1" name="fl_m3_s3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="-0.00823991 0.00823991 -0.0152617" mass="0.0992632" fullinertia="3.95043e-05 3.95043e-05 6.07656e-05 2.3154e-05 -1.04189e-05 1.04189e-05"/>
@@ -357,22 +359,22 @@
             <joint axis="0 0 1" name="fl_l4_l3" type="hinge" range="-1.22173048 0.0" frictionloss="0.00"/>
             <inertial pos="0.00103938 0.0182116 -0.00554955" mass="0.0817713" fullinertia="0.000302906 7.59939e-06 0.000308167 3.74948e-07 4.07464e-07 6.18739e-06"/>
             <!-- Part bearing_11 -->
-            <geom type="mesh" class="visual" pos="0 -0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="0 -0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="0 0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="0 0 -0.008" quat="0.707107 -0.707107 0 0" mesh="bearing" material="bearing_material"/>
             <!-- Part bearing_12 -->
-            <geom type="mesh" class="visual" pos="-0 -0.055 0" quat="0 -0 0.707107 0.707107" mesh="bearing" material="bearing_material"/>
-            <geom type="mesh" class="collision" pos="-0 -0.055 0" quat="0 -0 0.707107 0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="visual" pos="0 -0.055 -0" quat="0 0 0.707107 0.707107" mesh="bearing" material="bearing_material"/>
+            <geom type="mesh" class="collision" pos="0 -0.055 -0" quat="0 0 0.707107 0.707107" mesh="bearing" material="bearing_material"/>
             <!-- Part l4_l_2 -->
             <geom type="mesh" class="visual" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 0 -0" mesh="l4_l" material="l4_l_material"/>
             <geom type="mesh" class="collision" pos="-0.16 -0.002 -0.008" quat="0.707107 0.707107 0 -0" mesh="l4_l" material="l4_l_material"/>
             <!-- Link feet_4 -->
-            <body name="feet_4" pos="0 0.163 -0.004" quat="0 -0 -0.707107 0.707107">
+            <body name="feet_4" pos="0 0.163 -0.004" quat="0 -0 0.707107 -0.707107">
               <!-- Joint from l4_l_2 to feet_4 -->
               <!-- Joint is "fixed", skipping it -->
               <inertial pos="-5.89463e-07 5.84139e-05 0.00137833" mass="0.0122519" fullinertia="9.79775e-07 1.11956e-06 1.18164e-06 5e-12 6.2e-11 -3.871e-09"/>
               <!-- Part feet_4 -->
-              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 0 0 0" mesh="feet" material="feet_material"/>
-              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 0 0 0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="visual" pos="0.200014 0.035 0.203" quat="1 -0 -0 -0" mesh="feet" material="feet_material"/>
+              <geom type="mesh" class="collision" pos="0.200014 0.035 0.203" quat="1 -0 -0 -0" mesh="feet" material="feet_material"/>
             </body>
           </body>
         </body>
