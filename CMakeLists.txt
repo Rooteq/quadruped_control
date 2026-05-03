@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 project(quadruped_control)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+# Use the LLVM linker for lightning-fast linking
+# add_link_options("-fuse-ld=lld")
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
@@ -33,6 +36,10 @@ target_include_directories(test_node PUBLIC
 
 target_link_libraries(control_node controller)
 target_link_libraries(test_node controller)
+
+# Precompile ROS2 core headers for the executables
+target_precompile_headers(control_node PRIVATE <rclcpp/rclcpp.hpp>)
+target_precompile_headers(test_node PRIVATE <rclcpp/rclcpp.hpp>)
 
 target_compile_features(control_node PUBLIC cxx_std_17)
 target_compile_features(test_node PUBLIC cxx_std_17)
@@ -74,5 +81,7 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+# set_target_properties(controller PROPERTIES UNITY_BUILD ON)
 
 ament_package()

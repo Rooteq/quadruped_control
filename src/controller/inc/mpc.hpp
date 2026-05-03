@@ -107,8 +107,8 @@ private:
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     static constexpr double Q_WEIGHTS[N_STATE] = {
-        30.0, 10.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)
-         1.0,  1.0, 50.0,  // px, py, pz
+        20.0, 10.0,  1.0,  // roll(φ), pitch(θ), yaw(ψ)
+         1.0,  1.0, 30.0,  // px, py, pz
          1.0,  1.0,  1.0,  // ωx, ωy, ωz
          2.0,  2.0,  1.0,  // vx, vy, vz
          0.0                // -g, don't penalise

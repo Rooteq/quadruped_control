@@ -17,6 +17,15 @@ find_package(casadi REQUIRED)
 
 target_include_directories(controller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
+# Precompile heavy C++ templates to drastically speed up compilation
+target_precompile_headers(controller PRIVATE
+    <Eigen/Dense>
+    <casadi/casadi.hpp>
+    <pinocchio/fwd.hpp>
+    <pinocchio/multibody/model.hpp>
+    <pinocchio/multibody/data.hpp>
+)
+
 target_link_libraries(controller
     pinocchio::pinocchio
     qpOASES 
