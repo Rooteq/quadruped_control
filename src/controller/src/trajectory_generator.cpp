@@ -27,8 +27,8 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
     std::array<LegTarget, NUM_LEGS> targets{};
 
     const Eigen::VectorXd& state = model.stateVector();
-    Eigen::Vector3d base_pos_w(state[3], state[4], state[5]);
-    Eigen::Vector3d base_vel_w(state[9], state[10], state[11]);
+    Eigen::Vector3d base_pos_w = model.bodyPosition();          // base_link, not CoM
+    Eigen::Vector3d base_vel_w(state[9], state[10], state[11]); // CoM linear velocity (world)
     const Eigen::Matrix3d& R_b_w = model.bodyToWorldRotation();
 
     // Phase rate: how fast swing phase [0,1] advances per second
@@ -57,6 +57,7 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
 
             targets[leg].foot_pos = swing_states_[leg].stance_foot_pos;
             targets[leg].foot_vel = Eigen::Vector3d::Zero();
+            targets[leg].foot_acc = Eigen::Vector3d::Zero();
         }
         else
         {
@@ -75,6 +76,7 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
             double phase = gait.swingPhase(leg);  // [0, 1]
             targets[leg].foot_pos = evaluateSwing(swing_states_[leg], phase);
             targets[leg].foot_vel = evaluateSwingVelocity(swing_states_[leg], phase, phase_rate);
+            targets[leg].foot_acc = evaluateSwingAcceleration(swing_states_[leg], phase, phase_rate);
         }
     }
 
@@ -89,8 +91,9 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const Eigen::Vector3d& desired_vel,
     double yaw_rate_des) const
 {
-    const Eigen::VectorXd& state = model.stateVector();
-    Eigen::Vector3d base_pos(state[3], state[4], 0.0);  // z=0: project onto ground plane
+    // Use base_link (not CoM) as kinematic anchor — see calculateStand for rationale.
+    Eigen::Vector3d base_pos = model.bodyPosition();
+    base_pos.z() = 0.0;                                  // project onto ground plane
     Eigen::Matrix3d R_z = model.bodyYawRotation();
     Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
 
@@ -172,6 +175,34 @@ Eigen::Vector3d TrajectoryGenerator::evaluateSwingVelocity(
     double vz = dz_dphase * phase_rate;
 
     return {vx, vy, vz};
+}
+
+Eigen::Vector3d TrajectoryGenerator::evaluateSwingAcceleration(
+    const SwingState& state, double phase, double phase_rate) const
+{
+    // d²/dt² = d²/dphase² · phase_rate²  (constant phase_rate over a swing)
+    const double pr2 = phase_rate * phase_rate;
+
+    // XY: smooth-step second derivative — d²s/dphase² = 6·(1 − 2·phase)
+    double d2s_dphase2 = 6.0 * (1.0 - 2.0 * phase);
+    double ax = (state.landing_pos.x() - state.liftoff_pos.x()) * d2s_dphase2 * pr2;
+    double ay = (state.landing_pos.y() - state.liftoff_pos.y()) * d2s_dphase2 * pr2;
+
+    // Z: cubic Bezier second derivative
+    // d²B/dt² = 6·(1−t)·(p2 − 2·p1 + p0) + 6·t·(p3 − 2·p2 + p1)
+    double t  = phase;
+    double mt = 1.0 - t;
+
+    double p0 = state.liftoff_pos.z();
+    double p1 = state.liftoff_pos.z() + state.apex_height;
+    double p2 = state.landing_pos.z() + state.apex_height;
+    double p3 = state.landing_pos.z();
+
+    double d2z_dphase2 = 6.0 * mt * (p2 - 2.0 * p1 + p0)
+                       + 6.0 * t  * (p3 - 2.0 * p2 + p1);
+    double az = d2z_dphase2 * pr2;
+
+    return {ax, ay, az};
 }
 
 } // namespace quadro

@@ -58,8 +58,11 @@ public:
         const double alpha_raw = std::min(elapsed / STAND_LOWER_DURATION, 1.0);
         const double alpha     = alpha_raw * alpha_raw * (3.0 - 2.0 * alpha_raw);
 
-        const auto& x0 = quadro_model_.stateVector();
-        Eigen::Vector3d base_pos(x0[3], x0[4], x0[5]);
+        // Use base_link (NOT the CoM stored in stateVector()[3:5]) as the kinematic
+        // anchor: foot_world = base_link + R_bw · body_frame_offset. Mixing the CoM
+        // anchor with body-frame offsets bakes the (CoM − base_link) offset into
+        // every leg target, which causes asymmetric stance and inward drift.
+        const Eigen::Vector3d& base_pos = quadro_model_.bodyPosition();
         const Eigen::Matrix3d& R_bw = quadro_model_.bodyToWorldRotation();
 
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)

@@ -102,19 +102,34 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     pinocchio::forwardKinematics(model_, data_, q_pin_, dq_pin_);
     pinocchio::updateFramePlacements(model_, data_);
     pinocchio::computeJointJacobians(model_, data_, q_pin_);
+    pinocchio::computeJointJacobiansTimeVariation(model_, data_, q_pin_, dq_pin_);
     pinocchio::crba(model_, data_, q_pin_);
+    // CRBA fills only the upper triangle — mirror to get a symmetric M for use in Λ⁻¹.
+    data_.M.triangularView<Eigen::StrictlyLower>() =
+        data_.M.transpose().triangularView<Eigen::StrictlyLower>();
     pinocchio::ccrba(model_, data_, q_pin_, dq_pin_);  // populates data_.Ig (mass + inertia)
     pinocchio::computeGeneralizedGravity(model_, data_, q_pin_);
+    pinocchio::nonLinearEffects(model_, data_, q_pin_, dq_pin_);   // data_.nle = C·v + g
     pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 
     // Remap gravity torques from Pinocchio order → canonical order
     gravity_canonical_.resize(NUM_JOINTS);
+    nle_canonical_.resize(NUM_JOINTS);
     for (size_t i = 0; i < NUM_JOINTS; ++i)
     {
         gravity_canonical_[i] = data_.g[canonical_to_pin_v_[i]];
+        nle_canonical_[i]     = data_.nle[canonical_to_pin_v_[i]];
     }
-    // pinocchio::centerOfMass(model_, data_, q_pin_, dq_pin_);
 
+    // Use Pinocchio CoM as the position/velocity in the MPC state. This matches
+    // the Python reference (centroidal MPC about the CoM, not base_link). Both
+    // data_.com[0] and data_.vcom[0] are expressed in the WORLD frame.
+    x[3] = data_.com[0][0];
+    x[4] = data_.com[0][1];
+    x[5] = data_.com[0][2];
+    x[9]  = data_.vcom[0][0];
+    x[10] = data_.vcom[0][1];
+    x[11] = data_.vcom[0][2];
 }
 
 void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
@@ -130,10 +145,17 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     x[0]  = euler[2];              // roll  (φ)
     x[1]  = euler[1];              // pitch (θ)
     x[2]  = euler[0];              // yaw   (ψ)
+    // base_link world position — used by kinematic anchors (calculateStand,
+    // computeLandingPos). Distinct from x[3:5] which is the CoM (MPC convention).
+    base_position_ = position;
+
+    // x[3:5] (position) and x[9:11] (linear velocity) are written by updateState()
+    // from data_.com[0] / data_.vcom[0] (CoM in world frame). Set fallbacks here
+    // in case updateState() has not yet been called.
     x[3]  = position[0];
     x[4]  = position[1];
     x[5]  = position[2];
-    
+
     // MPC state expects WORLD frame velocities for omega and v.
     // ROS odometry topic usually reports twist in the body frame (child_frame_id).
     // So we rotate them to world frame before setting MPC state.
@@ -190,6 +212,24 @@ Eigen::Matrix3d QuadroModel::footJacobian(int leg_idx) const
         J.col(j) = J6.block<3, 1>(0, leg_pin_v_cols_[leg_idx][j]);
 
     return J;
+}
+
+Eigen::Matrix<double, 3, Eigen::Dynamic>
+QuadroModel::footFullJacobianLinear(int leg_idx) const
+{
+    pinocchio::Data::Matrix6x J6 = pinocchio::Data::Matrix6x::Zero(6, model_.nv);
+    pinocchio::getFrameJacobian(model_, data_, foot_frame_ids_[leg_idx],
+                                pinocchio::LOCAL_WORLD_ALIGNED, J6);
+    return J6.topRows<3>();
+}
+
+Eigen::Vector3d QuadroModel::footJdotV(int leg_idx) const
+{
+    // Requires computeJointJacobiansTimeVariation() to have been called in updateState.
+    pinocchio::Data::Matrix6x Jdot = pinocchio::Data::Matrix6x::Zero(6, model_.nv);
+    pinocchio::getFrameJacobianTimeVariation(model_, data_, foot_frame_ids_[leg_idx],
+                                             pinocchio::LOCAL_WORLD_ALIGNED, Jdot);
+    return Jdot.topRows<3>() * dq_pin_;
 }
 
 // Robot's model should include frames in the hip position, now manually calculated hip location is used
