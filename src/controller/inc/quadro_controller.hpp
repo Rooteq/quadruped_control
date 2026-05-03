@@ -179,7 +179,7 @@ private:
     double settle_time_          = -1.0;
 
     static constexpr double STAND_LOWER_DURATION = 3.0;  // seconds to reach nominal height
-    static constexpr double STAND_HOLD_DURATION  = 4.5;  // seconds to hold before walking
+    static constexpr double STAND_HOLD_DURATION  = 1.5;  // seconds to hold before walking
 
     // Reference trajectory — HORIZON_STEPS × 13-state vectors
     // x_ref_[n] = desired state at prediction step n
