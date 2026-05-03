@@ -5,24 +5,280 @@
   <!-- Link back_plate -->
   <link name="back_plate">
     <inertial>
-      <origin xyz="-3.82601e-05 -0.00496654 -0.00528261" rpy="0 0 0"/>
+      <origin xyz="0.0139665 -3.82601e-05 -0.0137826" rpy="0 0 0"/>
       <mass value="2.59053"/>
-      <inertia ixx="0.0255846" ixy="-4.15339e-05" ixz="4e-12" iyy="0.00872593" iyz="-0.000207516" izz="0.0313278"/>
+      <inertia ixx="0.00872593" ixy="4.15339e-05" ixz="0.000207516" iyy="0.0255846" iyz="8e-12" izz="0.0313278"/>
     </inertial>
-    <!-- Part back_plate_parts -->
+    <!-- Part back_stop -->
     <visual>
-      <origin xyz="-3.82601e-05 -0.00496654 -0.00528261" rpy="0 -0 0"/>
+      <origin xyz="0.0544675 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_stop.stl"/>
       </geometry>
-      <material name="back_plate_parts_material">
-        <color rgba="0.67735 0.643034 0.48069 1"/>
+      <material name="back_stop_material">
+        <color rgba="1 0.756863 0.054902 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-3.82601e-05 -0.00496654 -0.00528261" rpy="0 -0 0"/>
+      <origin xyz="0.0544675 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_stop.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_pipe -->
+    <visual>
+      <origin xyz="-0.0846325 -0.147986 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_pipe.stl"/>
+      </geometry>
+      <material name="side_pipe_material">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0846325 -0.147986 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_pipe.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_cover -->
+    <visual>
+      <origin xyz="0.102368 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_cover.stl"/>
+      </geometry>
+      <material name="side_cover_material">
+        <color rgba="0.647059 0.647059 0.647059 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.102368 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_cover.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part back_plate -->
+    <visual>
+      <origin xyz="-0.0846325 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate.stl"/>
+      </geometry>
+      <material name="back_plate_material">
+        <color rgba="1 0.756863 0.054902 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0846325 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part battery -->
+    <visual>
+      <origin xyz="0.0528675 0.0664617 -0.0294927" rpy="1.652e-09 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/battery.stl"/>
+      </geometry>
+      <material name="battery_material">
+        <color rgba="0.768627 0.886275 0.952941 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0528675 0.0664617 -0.0294927" rpy="1.652e-09 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/battery.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor -->
+    <visual>
+      <origin xyz="0.113368 -0.0550383 -0.00849266" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.113368 -0.0550383 -0.00849266" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_cover_2 -->
+    <visual>
+      <origin xyz="-0.0846325 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_cover.stl"/>
+      </geometry>
+      <material name="side_cover_2_material">
+        <color rgba="0.647059 0.647059 0.647059 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0846325 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_cover.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_2 -->
+    <visual>
+      <origin xyz="-0.0956325 -0.0550383 -0.00849266" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_2_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0956325 -0.0550383 -0.00849266" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_3 -->
+    <visual>
+      <origin xyz="0.113368 0.0549617 -0.00849266" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_3_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.113368 0.0549617 -0.00849266" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bot_pipe_half -->
+    <visual>
+      <origin xyz="-0.418632 -3.82602e-05 -0.0584927" rpy="3.14159 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_pipe_half.stl"/>
+      </geometry>
+      <material name="bot_pipe_half_material">
+        <color rgba="0.972549 0.529412 0.00392157 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.418632 -3.82602e-05 -0.0584927" rpy="3.14159 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_pipe_half.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_pipe_2 -->
+    <visual>
+      <origin xyz="0.102368 -3.826e-05 0.0955073" rpy="3.14159 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_pipe.stl"/>
+      </geometry>
+      <material name="side_pipe_2_material">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.102368 -3.826e-05 0.0955073" rpy="3.14159 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/side_pipe.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_4 -->
+    <visual>
+      <origin xyz="-0.0956325 0.0549617 -0.00849266" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_4_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0956325 0.0549617 -0.00849266" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part back_stop_2 -->
+    <visual>
+      <origin xyz="-0.0367325 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_stop.stl"/>
+      </geometry>
+      <material name="back_stop_2_material">
+        <color rgba="1 0.756863 0.054902 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0367325 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_stop.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part back_plate_2 -->
+    <visual>
+      <origin xyz="0.102368 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate.stl"/>
+      </geometry>
+      <material name="back_plate_2_material">
+        <color rgba="1 0.756863 0.054902 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.102368 -3.82602e-05 -0.0584927" rpy="0 -1.652e-09 -1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/back_plate.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bot_pipe_half_2 -->
+    <visual>
+      <origin xyz="0.436368 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_pipe_half.stl"/>
+      </geometry>
+      <material name="bot_pipe_half_2_material">
+        <color rgba="0.972549 0.529412 0.00392157 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.436368 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_pipe_half.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part mid_clamp -->
+    <visual>
+      <origin xyz="-0.224232 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_clamp.stl"/>
+      </geometry>
+      <material name="mid_clamp_material">
+        <color rgba="1 0.756863 0.054902 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.224232 -3.82602e-05 -0.0584927" rpy="-0 1.652e-09 1.5708"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_clamp.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part battery_2 -->
+    <visual>
+      <origin xyz="0.0528675 -0.0665383 -0.0294927" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/battery.stl"/>
+      </geometry>
+      <material name="battery_2_material">
+        <color rgba="0.768627 0.886275 0.952941 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0528675 -0.0665383 -0.0294927" rpy="-3.14159 0 -3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/battery.stl"/>
       </geometry>
     </collision>
   </link>
@@ -33,20 +289,52 @@
       <mass value="0.452938"/>
       <inertia ixx="0.000550761" ixy="-6.00381e-05" ixz="-1.13918e-05" iyy="0.00055728" iyz="1.18589e-05" izz="0.000239291"/>
     </inertial>
-    <!-- Part shaft_parts -->
+    <!-- Part lin_1_support_br -->
     <visual>
-      <origin xyz="-0.00474046 0.00407901 -0.0612986" rpy="-1.5708 0 -3.14159"/>
+      <origin xyz="-0.019799 0.019799 -0.0735" rpy="0.785398 -1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_br.stl"/>
       </geometry>
-      <material name="shaft_parts_material">
-        <color rgba="0.556109 0.556109 0.556109 1"/>
+      <material name="lin_1_support_br_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.00474046 0.00407901 -0.0612986" rpy="-1.5708 0 -3.14159"/>
+      <origin xyz="-0.019799 0.019799 -0.0735" rpy="0.785398 -1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_br.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_5 -->
+    <visual>
+      <origin xyz="-0.0120208 0.0120208 -0.0735" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_5_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0120208 0.0120208 -0.0735" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft -->
+    <visual>
+      <origin xyz="-0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
@@ -57,20 +345,84 @@
       <mass value="0.524841"/>
       <inertia ixx="0.000439148" ixy="6.14395e-05" ixz="0.000140002" iyy="0.000912333" iyz="-3.78102e-05" izz="0.000883052"/>
     </inertial>
-    <!-- Part shaft_2_parts -->
+    <!-- Part bot_r -->
     <visual>
-      <origin xyz="0.00931177 -0.00187407 -0.0491985" rpy="-3.14159 -0.785398 1.5708"/>
+      <origin xyz="0 -0 0.1275" rpy="-1.5708 -0 -0.0872665"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_2_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_r.stl"/>
       </geometry>
-      <material name="shaft_2_parts_material">
-        <color rgba="0.603491 0.603491 0.603491 1"/>
+      <material name="bot_r_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00931177 -0.00187407 -0.0491985" rpy="-3.14159 -0.785398 1.5708"/>
+      <origin xyz="0 -0 0.1275" rpy="-1.5708 -0 -0.0872665"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_2_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_r.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part top_r -->
+    <visual>
+      <origin xyz="0 -0 0.1275" rpy="-1.5708 -0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_r.stl"/>
+      </geometry>
+      <material name="top_r_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0.1275" rpy="-1.5708 -0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_r.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_2 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_2_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lin_2_br -->
+    <visual>
+      <origin xyz="0 -0 0.0305" rpy="-1.5708 -0 0.698132"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_br.stl"/>
+      </geometry>
+      <material name="lin_2_br_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0.0305" rpy="-1.5708 -0 0.698132"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_br.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_6 -->
+    <visual>
+      <origin xyz="0 -0 -0.0395" rpy="0.872665 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_6_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 -0.0395" rpy="0.872665 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
       </geometry>
     </collision>
   </link>
@@ -81,20 +433,52 @@
       <mass value="0.0992632"/>
       <inertia ixx="3.95043e-05" ixy="-2.3154e-05" ixz="1.04189e-05" iyy="3.95043e-05" iyz="1.04189e-05" izz="6.07656e-05"/>
     </inertial>
-    <!-- Part shaft_3_parts -->
+    <!-- Part bearing -->
     <visual>
-      <origin xyz="0.00823991 0.00823991 -0.0152617" rpy="-3.14159 -0.785398 1.79769"/>
+      <origin xyz="0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -0.785398"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_3_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
-      <material name="shaft_3_parts_material">
-        <color rgba="0.546859 0.552826 0.557467 1"/>
+      <material name="bearing_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00823991 0.00823991 -0.0152617" rpy="-3.14159 -0.785398 1.79769"/>
+      <origin xyz="0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -0.785398"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_3_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_3 -->
+    <visual>
+      <origin xyz="-0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_3_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part mid_r -->
+    <visual>
+      <origin xyz="-0 0 0.186" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_r.stl"/>
+      </geometry>
+      <material name="mid_r_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 0.186" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_r.stl"/>
       </geometry>
     </collision>
   </link>
@@ -104,8 +488,7 @@
     <parent link="shaft_2"/>
     <child link="shaft_3"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
     <mimic joint="br_l4_l3" multiplier="1.0"/>
   </joint>
   <!-- Link l4_r -->
@@ -115,20 +498,52 @@
       <mass value="0.0817713"/>
       <inertia ixx="0.000302906" ixy="-3.74948e-07" ixz="4.07464e-07" iyy="7.59939e-06" iyz="-6.18739e-06" izz="0.000308167"/>
     </inertial>
-    <!-- Part l4_r_parts -->
+    <!-- Part l4_r -->
     <visual>
-      <origin xyz="0.00103938 -0.0182116 -0.00554955" rpy="3.14159 -0.785398 2.58309"/>
+      <origin xyz="-0.16 0.002 0.192" rpy="-1.5708 -0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r.stl"/>
       </geometry>
-      <material name="l4_r_parts_material">
-        <color rgba="0.712011 0.726499 0.737767 1"/>
+      <material name="l4_r_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00103938 -0.0182116 -0.00554955" rpy="3.14159 -0.785398 2.58309"/>
+      <origin xyz="-0.16 0.002 0.192" rpy="-1.5708 -0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_2 -->
+    <visual>
+      <origin xyz="-0 0.055 -0.008" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_2_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0.055 -0.008" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_3 -->
+    <visual>
+      <origin xyz="-0 0 -0.008" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_3_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 -0.008" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
     </collision>
   </link>
@@ -139,40 +554,38 @@
       <mass value="0.0122519"/>
       <inertia ixx="9.79775e-07" ixy="5e-12" ixz="6.2e-11" iyy="1.11956e-06" iyz="-3.871e-09" izz="1.18164e-06"/>
     </inertial>
-    <!-- Part feet_parts -->
+    <!-- Part feet -->
     <visual>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 -0.384083 -2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="-0 0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
-      <material name="feet_parts_material">
+      <material name="feet_material">
         <color rgba="0.917647 0.917647 0.917647 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 -0.384083 -2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="-0 0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from l4_r to feet -->
   <joint name="br_feet" type="fixed">
-    <origin xyz="0 -0.163 -0.004" rpy="-1.5708 -0 -0"/>
+    <origin xyz="-0 -0.163 -0.004" rpy="-1.5708 0 -0"/>
     <parent link="l4_r"/>
     <child link="feet"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft_2 to l4_r -->
   <joint name="br_l4_l3" type="revolute">
-    <origin xyz="0.159217 -0.0159373 -0.0735" rpy="-0 0 -1.01229"/>
+    <origin xyz="0.159217 -0.0159373 -0.0735" rpy="0 0 -1.01229"/>
     <parent link="shaft_2"/>
     <child link="l4_r"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft to shaft_2 -->
   <joint name="br_m2_s2" type="revolute">
@@ -180,17 +593,15 @@
     <parent link="shaft"/>
     <child link="shaft_2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from back_plate to shaft -->
   <joint name="br_m1_s1" type="revolute">
-    <origin xyz="-0.0550383 0.114632 7.33851e-06" rpy="-1.5708 -0 3.14159"/>
+    <origin xyz="-0.105632 -0.0550383 -0.00849266" rpy="-1.5708 -0 -1.5708"/>
     <parent link="back_plate"/>
     <child link="shaft"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Link shaft_4 -->
   <link name="shaft_4">
@@ -199,20 +610,52 @@
       <mass value="0.453012"/>
       <inertia ixx="0.000546146" ixy="6.01031e-05" ixz="1.17627e-05" iyy="0.000552555" iyz="1.15907e-05" izz="0.000239462"/>
     </inertial>
-    <!-- Part shaft_4_parts -->
+    <!-- Part shaft_4 -->
     <visual>
-      <origin xyz="0.00473706 0.0040862 -0.0608763" rpy="-1.5708 -0 -3.14159"/>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_4_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
-      <material name="shaft_4_parts_material">
-        <color rgba="0.556165 0.556165 0.556165 1"/>
+      <material name="shaft_4_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00473706 0.0040862 -0.0608763" rpy="-1.5708 -0 -3.14159"/>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_4_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_7 -->
+    <visual>
+      <origin xyz="0.0120208 0.0120208 -0.0735" rpy="1.5708 -0 -2.35619"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_7_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0120208 0.0120208 -0.0735" rpy="1.5708 -0 -2.35619"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lin_1_support_bl -->
+    <visual>
+      <origin xyz="0.0685894 0.0685894 -0.0735" rpy="2.35619 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_bl.stl"/>
+      </geometry>
+      <material name="lin_1_support_bl_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0685894 0.0685894 -0.0735" rpy="2.35619 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_bl.stl"/>
       </geometry>
     </collision>
   </link>
@@ -223,20 +666,84 @@
       <mass value="0.524841"/>
       <inertia ixx="0.000610231" ixy="-0.000236595" ixz="0.000101861" iyy="0.000743295" iyz="0.00010283" izz="0.000885096"/>
     </inertial>
-    <!-- Part shaft_5_parts -->
+    <!-- Part lin_2_bl -->
     <visual>
-      <origin xyz="0.00679431 0.00633758 -0.0491985" rpy="3.14159 0.785398 2.0944"/>
+      <origin xyz="0 0 -0.0195" rpy="1.5708 0 -0.174533"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_5_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_bl.stl"/>
       </geometry>
-      <material name="shaft_5_parts_material">
-        <color rgba="0.603491 0.603491 0.603491 1"/>
+      <material name="lin_2_bl_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00679431 0.00633758 -0.0491985" rpy="3.14159 0.785398 2.0944"/>
+      <origin xyz="0 0 -0.0195" rpy="1.5708 0 -0.174533"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_5_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_bl.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part top_l -->
+    <visual>
+      <origin xyz="-0 0 -0.0725" rpy="1.5708 0 0.610865"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_l.stl"/>
+      </geometry>
+      <material name="top_l_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 -0.0725" rpy="1.5708 0 0.610865"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_l.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_8 -->
+    <visual>
+      <origin xyz="0 0 -0.0395" rpy="-1.39626 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_8_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.0395" rpy="-1.39626 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bot_l -->
+    <visual>
+      <origin xyz="-0 0 -0.0725" rpy="1.5708 0 0.610865"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_l.stl"/>
+      </geometry>
+      <material name="bot_l_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 -0.0725" rpy="1.5708 0 0.610865"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_l.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_5 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_5_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
@@ -247,31 +754,62 @@
       <mass value="0.0992632"/>
       <inertia ixx="3.95043e-05" ixy="2.3154e-05" ixz="-1.04189e-05" iyy="3.95043e-05" iyz="1.04189e-05" izz="6.07656e-05"/>
     </inertial>
-    <!-- Part shaft_6_parts -->
+    <!-- Part bearing_4 -->
     <visual>
-      <origin xyz="-0.00823991 0.00823991 -0.0152617" rpy="3.14159 0.785398 -1.79769"/>
+      <origin xyz="-0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_6_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
-      <material name="shaft_6_parts_material">
-        <color rgba="0.546859 0.552826 0.557467 1"/>
+      <material name="bearing_4_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.00823991 0.00823991 -0.0152617" rpy="3.14159 0.785398 -1.79769"/>
+      <origin xyz="-0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_6_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_6 -->
+    <visual>
+      <origin xyz="0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_6_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part mid_l -->
+    <visual>
+      <origin xyz="0 -0 -0.014" rpy="1.5708 0 -2.35619"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_l.stl"/>
+      </geometry>
+      <material name="mid_l_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 -0.014" rpy="1.5708 0 -2.35619"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_l.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from shaft_5 to shaft_6 -->
   <joint name="bl_m3_s3" type="revolute">
-    <origin xyz="-0 0 -0.0495" rpy="-0 -0 -2.3911"/>
+    <origin xyz="0 0 -0.0495" rpy="-0 -0 -2.3911"/>
     <parent link="shaft_5"/>
     <child link="shaft_6"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
     <mimic joint="bl_l4_l3" multiplier="1.0"/>
   </joint>
   <!-- Link l4_l -->
@@ -281,20 +819,52 @@
       <mass value="0.0817713"/>
       <inertia ixx="0.000302906" ixy="3.74948e-07" ixz="4.07464e-07" iyy="7.59939e-06" iyz="6.18739e-06" izz="0.000308167"/>
     </inertial>
-    <!-- Part l4_l_parts -->
+    <!-- Part bearing_5 -->
     <visual>
-      <origin xyz="0.00103938 0.0182116 -0.00554955" rpy="3.14159 0.785398 0.558505"/>
+      <origin xyz="-0 0 -0.008" rpy="-1.5708 -0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
-      <material name="l4_l_parts_material">
-        <color rgba="0.712011 0.726499 0.737767 1"/>
+      <material name="bearing_5_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00103938 0.0182116 -0.00554955" rpy="3.14159 0.785398 0.558505"/>
+      <origin xyz="-0 0 -0.008" rpy="-1.5708 -0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_6 -->
+    <visual>
+      <origin xyz="-0 -0.055 -0.008" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_6_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 -0.055 -0.008" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part l4_l -->
+    <visual>
+      <origin xyz="-0.16 -0.002 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l.stl"/>
+      </geometry>
+      <material name="l4_l_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.16 -0.002 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l.stl"/>
       </geometry>
     </collision>
   </link>
@@ -305,31 +875,30 @@
       <mass value="0.0122519"/>
       <inertia ixx="9.79775e-07" ixy="5e-12" ixz="6.2e-11" iyy="1.11956e-06" iyz="-3.871e-09" izz="1.18164e-06"/>
     </inertial>
-    <!-- Part feet_2_parts -->
+    <!-- Part feet_2 -->
     <visual>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 0.384083 2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="-0 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_2_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
-      <material name="feet_2_parts_material">
+      <material name="feet_2_material">
         <color rgba="0.917647 0.917647 0.917647 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 0.384083 2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="-0 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_2_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from l4_l to feet_2 -->
   <joint name="bl_feet" type="fixed">
-    <origin xyz="-0 0.163 -0.004" rpy="-1.5708 -0 -3.14159"/>
+    <origin xyz="0 0.163 -0.004" rpy="-1.5708 -0 -3.14159"/>
     <parent link="l4_l"/>
     <child link="feet_2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft_5 to l4_l -->
   <joint name="bl_l4_l3" type="revolute">
@@ -337,8 +906,7 @@
     <parent link="shaft_5"/>
     <child link="l4_l"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft_4 to shaft_5 -->
   <joint name="bl_m2_s2" type="revolute">
@@ -346,17 +914,15 @@
     <parent link="shaft_4"/>
     <child link="shaft_5"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from back_plate to shaft_4 -->
   <joint name="bl_m1_s1" type="revolute">
-    <origin xyz="0.0549617 0.114632 7.33841e-06" rpy="-1.5708 -0 -3.14159"/>
+    <origin xyz="-0.105632 0.0549617 -0.00849266" rpy="-1.5708 -0 -1.5708"/>
     <parent link="back_plate"/>
     <child link="shaft_4"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Link shaft_7 -->
   <link name="shaft_7">
@@ -365,20 +931,52 @@
       <mass value="0.453012"/>
       <inertia ixx="0.000545527" ixy="6.01135e-05" ixz="-1.23936e-05" iyy="0.000553194" iyz="-1.09597e-05" izz="0.000239482"/>
     </inertial>
-    <!-- Part shaft_7_parts -->
+    <!-- Part lin_1_support_fr -->
     <visual>
-      <origin xyz="-0.00469968 -0.00412358 -0.0608763" rpy="1.5708 0 3.14159"/>
+      <origin xyz="-0.109319 -0.109319 -0.0735" rpy="2.35619 -1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_7_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_fr.stl"/>
       </geometry>
-      <material name="shaft_7_parts_material">
-        <color rgba="0.556166 0.556166 0.556166 1"/>
+      <material name="lin_1_support_fr_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.00469968 -0.00412358 -0.0608763" rpy="1.5708 0 3.14159"/>
+      <origin xyz="-0.109319 -0.109319 -0.0735" rpy="2.35619 -1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_7_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_fr.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_9 -->
+    <visual>
+      <origin xyz="-0.0120208 -0.0120208 -0.0735" rpy="1.5708 -0 0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_9_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0120208 -0.0120208 -0.0735" rpy="1.5708 -0 0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_7 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_7_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
@@ -389,20 +987,84 @@
       <mass value="0.525416"/>
       <inertia ixx="0.000440202" ixy="6.05777e-05" ixz="0.000136109" iyy="0.000909648" iyz="-3.55951e-05" izz="0.000880794"/>
     </inertial>
-    <!-- Part shaft_8_parts -->
+    <!-- Part lin_2_fr -->
     <visual>
-      <origin xyz="0.00960955 -0.00201737 -0.0491732" rpy="3.14159 -0.785398 1.5708"/>
+      <origin xyz="0 -0 0.1305" rpy="-1.5708 -0 0.698132"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_8_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_fr.stl"/>
       </geometry>
-      <material name="shaft_8_parts_material">
-        <color rgba="0.603817 0.603817 0.603817 1"/>
+      <material name="lin_2_fr_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00960955 -0.00201737 -0.0491732" rpy="3.14159 -0.785398 1.5708"/>
+      <origin xyz="0 -0 0.1305" rpy="-1.5708 -0 0.698132"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_8_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_fr.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_10 -->
+    <visual>
+      <origin xyz="0 -0 -0.0395" rpy="0.872665 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+      <material name="motor_10_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 -0.0395" rpy="0.872665 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part top_r_2 -->
+    <visual>
+      <origin xyz="0 0 0.1275" rpy="-1.5708 0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_r.stl"/>
+      </geometry>
+      <material name="top_r_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.1275" rpy="-1.5708 0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_r.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_8 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_8_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bot_r_2 -->
+    <visual>
+      <origin xyz="0 0 0.1275" rpy="-1.5708 0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_r.stl"/>
+      </geometry>
+      <material name="bot_r_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.1275" rpy="-1.5708 0 -0.0872665"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_r.stl"/>
       </geometry>
     </collision>
   </link>
@@ -413,31 +1075,62 @@
       <mass value="0.0992632"/>
       <inertia ixx="3.95043e-05" ixy="-2.3154e-05" ixz="1.04189e-05" iyy="3.95043e-05" iyz="1.04189e-05" izz="6.07656e-05"/>
     </inertial>
-    <!-- Part shaft_9_parts -->
+    <!-- Part mid_r_2 -->
     <visual>
-      <origin xyz="0.00823991 0.00823991 -0.0152617" rpy="-3.14159 -0.785398 1.79769"/>
+      <origin xyz="0 -0 0.186" rpy="-1.5708 -0 -0.785398"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_9_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_r.stl"/>
       </geometry>
-      <material name="shaft_9_parts_material">
-        <color rgba="0.546859 0.552826 0.557467 1"/>
+      <material name="mid_r_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00823991 0.00823991 -0.0152617" rpy="-3.14159 -0.785398 1.79769"/>
+      <origin xyz="0 -0 0.186" rpy="-1.5708 -0 -0.785398"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_9_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_r.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_7 -->
+    <visual>
+      <origin xyz="0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_7_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0388909 0.0388909 -0.032" rpy="-1.5708 0 -0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_9 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_9_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from shaft_8 to shaft_9 -->
   <joint name="fr_m3_s3" type="revolute">
-    <origin xyz="0 -0 -0.0495" rpy="-0 -0 -0.226893"/>
+    <origin xyz="0 -0 -0.0495" rpy="-0 0 -0.226893"/>
     <parent link="shaft_8"/>
     <child link="shaft_9"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
     <mimic joint="fr_l4_l3" multiplier="1.0"/>
   </joint>
   <!-- Link l4_r_2 -->
@@ -447,20 +1140,52 @@
       <mass value="0.0817713"/>
       <inertia ixx="0.000302906" ixy="-3.74948e-07" ixz="4.07464e-07" iyy="7.59939e-06" iyz="-6.18739e-06" izz="0.000308167"/>
     </inertial>
-    <!-- Part l4_r_2_parts -->
+    <!-- Part bearing_8 -->
     <visual>
-      <origin xyz="0.00103938 -0.0182116 -0.00554955" rpy="-3.14159 -0.785398 2.58309"/>
+      <origin xyz="0 -0 0" rpy="1.5708 -0 3.14159"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r_2_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
-      <material name="l4_r_2_parts_material">
-        <color rgba="0.712011 0.726499 0.737767 1"/>
+      <material name="bearing_8_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00103938 -0.0182116 -0.00554955" rpy="-3.14159 -0.785398 2.58309"/>
+      <origin xyz="0 -0 0" rpy="1.5708 -0 3.14159"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r_2_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_9 -->
+    <visual>
+      <origin xyz="0 0.055 0" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_9_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.055 0" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part l4_r_2 -->
+    <visual>
+      <origin xyz="-0.16 0.002 0.192" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r.stl"/>
+      </geometry>
+      <material name="l4_r_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.16 0.002 0.192" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_r.stl"/>
       </geometry>
     </collision>
   </link>
@@ -471,40 +1196,38 @@
       <mass value="0.0122519"/>
       <inertia ixx="9.79775e-07" ixy="5e-12" ixz="6.2e-11" iyy="1.11956e-06" iyz="-3.871e-09" izz="1.18164e-06"/>
     </inertial>
-    <!-- Part feet_3_parts -->
+    <!-- Part feet_3 -->
     <visual>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 -0.384083 -2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="0 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_3_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
-      <material name="feet_3_parts_material">
+      <material name="feet_3_material">
         <color rgba="0.917647 0.917647 0.917647 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 -0.384083 -2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="0 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_3_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from l4_r_2 to feet_3 -->
   <joint name="fr_feet" type="fixed">
-    <origin xyz="-0 -0.163 -0.004" rpy="-1.5708 0 0"/>
+    <origin xyz="-0 -0.163 -0.004" rpy="-1.5708 -0 -0"/>
     <parent link="l4_r_2"/>
     <child link="feet_3"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft_8 to l4_r_2 -->
   <joint name="fr_l4_l3" type="revolute">
-    <origin xyz="0.159217 -0.0159373 -0.0735" rpy="0 -0 -1.01229"/>
+    <origin xyz="0.159217 -0.0159373 -0.0735" rpy="0 0 -1.01229"/>
     <parent link="shaft_8"/>
     <child link="l4_r_2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from shaft_7 to shaft_8 -->
   <joint name="fr_m2_s2" type="revolute">
@@ -512,17 +1235,15 @@
     <parent link="shaft_7"/>
     <child link="shaft_8"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from back_plate to shaft_7 -->
   <joint name="fr_m1_s1" type="revolute">
-    <origin xyz="-0.0550383 -0.114368 7.33851e-06" rpy="1.5708 -0 -3.14159"/>
+    <origin xyz="0.123368 -0.0550383 -0.00849266" rpy="1.5708 0 -1.5708"/>
     <parent link="back_plate"/>
     <child link="shaft_7"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Link motor -->
   <link name="motor">
@@ -531,20 +1252,52 @@
       <mass value="0.452937"/>
       <inertia ixx="0.000550142" ixy="-6.00486e-05" ixz="1.20299e-05" iyy="0.00055792" iyz="-1.12208e-05" izz="0.000239312"/>
     </inertial>
-    <!-- Part motor_parts -->
+    <!-- Part motor_11 -->
     <visual>
-      <origin xyz="0.00470307 -0.0041164 -0.0612986" rpy="1.5708 0 3.14159"/>
+      <origin xyz="0.0120208 -0.0120208 -0.0735" rpy="-1.5708 0 2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/motor_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
       </geometry>
-      <material name="motor_parts_material">
-        <color rgba="0.556109 0.556109 0.556109 1"/>
+      <material name="motor_11_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00470307 -0.0041164 -0.0612986" rpy="1.5708 0 3.14159"/>
+      <origin xyz="0.0120208 -0.0120208 -0.0735" rpy="-1.5708 0 2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/motor_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_10 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_10_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lin_1_support_fl -->
+    <visual>
+      <origin xyz="0.158109 -0.158109 -0.0735" rpy="0.785398 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_fl.stl"/>
+      </geometry>
+      <material name="lin_1_support_fl_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.158109 -0.158109 -0.0735" rpy="0.785398 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_1_support_fl.stl"/>
       </geometry>
     </collision>
   </link>
@@ -555,20 +1308,84 @@
       <mass value="0.525416"/>
       <inertia ixx="0.000439621" ixy="-5.98025e-05" ixz="-0.000135732" iyy="0.000912321" iyz="-3.59112e-05" izz="0.000882886"/>
     </inertial>
-    <!-- Part motor_2_parts -->
+    <!-- Part motor_12 -->
     <visual>
-      <origin xyz="-0.00935089 -0.00223441 -0.0491732" rpy="-3.14159 0.785398 -1.5708"/>
+      <origin xyz="0 0 -0.0395" rpy="2.26893 1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/motor_2_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
       </geometry>
-      <material name="motor_2_parts_material">
-        <color rgba="0.603817 0.603817 0.603817 1"/>
+      <material name="motor_12_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.00935089 -0.00223441 -0.0491732" rpy="-3.14159 0.785398 -1.5708"/>
+      <origin xyz="0 0 -0.0395" rpy="2.26893 1.5708 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/motor_2_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/motor.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lin_2_fl -->
+    <visual>
+      <origin xyz="-0 0 0.0805" rpy="1.5708 -0 2.44346"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_fl.stl"/>
+      </geometry>
+      <material name="lin_2_fl_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 0.0805" rpy="1.5708 -0 2.44346"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/lin_2_fl.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bot_l_2 -->
+    <visual>
+      <origin xyz="0 -0 -0.0725" rpy="1.5708 0 -3.05433"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_l.stl"/>
+      </geometry>
+      <material name="bot_l_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 -0.0725" rpy="1.5708 0 -3.05433"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bot_l.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part top_l_2 -->
+    <visual>
+      <origin xyz="0 -0 -0.0725" rpy="1.5708 0 -3.05433"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_l.stl"/>
+      </geometry>
+      <material name="top_l_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 -0.0725" rpy="1.5708 0 -3.05433"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/top_l.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_11 -->
+    <visual>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_11_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
@@ -579,31 +1396,62 @@
       <mass value="0.0992632"/>
       <inertia ixx="3.95043e-05" ixy="2.3154e-05" ixz="-1.04189e-05" iyy="3.95043e-05" iyz="1.04189e-05" izz="6.07656e-05"/>
     </inertial>
-    <!-- Part shaft_10_parts -->
+    <!-- Part mid_l_2 -->
     <visual>
-      <origin xyz="-0.00823991 0.00823991 -0.0152617" rpy="-3.14159 0.785398 -1.79769"/>
+      <origin xyz="0 -0 -0.014" rpy="1.5708 0 -2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_10_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_l.stl"/>
       </geometry>
-      <material name="shaft_10_parts_material">
-        <color rgba="0.546859 0.552826 0.557467 1"/>
+      <material name="mid_l_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.00823991 0.00823991 -0.0152617" rpy="-3.14159 0.785398 -1.79769"/>
+      <origin xyz="0 -0 -0.014" rpy="1.5708 0 -2.35619"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/shaft_10_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/mid_l.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_10 -->
+    <visual>
+      <origin xyz="-0.0388909 0.0388909 -0.024" rpy="1.5708 -0 0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_10_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0388909 0.0388909 -0.024" rpy="1.5708 -0 0.785398"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part shaft_12 -->
+    <visual>
+      <origin xyz="0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
+      </geometry>
+      <material name="shaft_12_material">
+        <color rgba="0.498039 0.498039 0.498039 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0.01" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/shaft.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from motor_2 to shaft_10 -->
   <joint name="fl_m3_s3" type="revolute">
-    <origin xyz="0 0 -0.0495" rpy="-0 0 0.226893"/>
+    <origin xyz="0 -0 -0.0495" rpy="-0 -0 0.226893"/>
     <parent link="motor_2"/>
     <child link="shaft_10"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
     <mimic joint="fl_l4_l3" multiplier="1.0"/>
   </joint>
   <!-- Link l4_l_2 -->
@@ -613,20 +1461,52 @@
       <mass value="0.0817713"/>
       <inertia ixx="0.000302906" ixy="3.74948e-07" ixz="4.07464e-07" iyy="7.59939e-06" iyz="6.18739e-06" izz="0.000308167"/>
     </inertial>
-    <!-- Part l4_l_2_parts -->
+    <!-- Part bearing_11 -->
     <visual>
-      <origin xyz="0.00103938 0.0182116 -0.00554955" rpy="-3.14159 0.785398 0.558505"/>
+      <origin xyz="0 0 -0.008" rpy="-1.5708 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l_2_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
       </geometry>
-      <material name="l4_l_2_parts_material">
-        <color rgba="0.712011 0.726499 0.737767 1"/>
+      <material name="bearing_11_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.00103938 0.0182116 -0.00554955" rpy="-3.14159 0.785398 0.558505"/>
+      <origin xyz="0 0 -0.008" rpy="-1.5708 0 -0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l_2_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12 -->
+    <visual>
+      <origin xyz="0 -0.055 -0" rpy="1.5708 0 3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+      <material name="bearing_12_material">
+        <color rgba="0.439216 0.47451 0.501961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.055 -0" rpy="1.5708 0 3.14159"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/bearing.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part l4_l_2 -->
+    <visual>
+      <origin xyz="-0.16 -0.002 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l.stl"/>
+      </geometry>
+      <material name="l4_l_2_material">
+        <color rgba="0.901961 0.901961 0.901961 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.16 -0.002 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="file://$(find quadruped_control)/description/assets/l4_l.stl"/>
       </geometry>
     </collision>
   </link>
@@ -637,40 +1517,38 @@
       <mass value="0.0122519"/>
       <inertia ixx="9.79775e-07" ixy="5e-12" ixz="6.2e-11" iyy="1.11956e-06" iyz="-3.871e-09" izz="1.18164e-06"/>
     </inertial>
-    <!-- Part feet_4_parts -->
+    <!-- Part feet_4 -->
     <visual>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 0.384083 2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="0 -0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_4_visual.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
-      <material name="feet_4_parts_material">
+      <material name="feet_4_material">
         <color rgba="0.917647 0.917647 0.917647 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-5.89463e-07 5.84139e-05 0.00137833" rpy="1.15474 0.384083 2.27416"/>
+      <origin xyz="0.200014 0.035 0.203" rpy="0 -0 0"/>
       <geometry>
-        <mesh filename="file://$(find quadruped_control)/description/assets/feet_4_collision.stl"/>
+        <mesh filename="file://$(find quadruped_control)/description/assets/feet.stl"/>
       </geometry>
     </collision>
   </link>
   <!-- Joint from l4_l_2 to feet_4 -->
   <joint name="fl_feet" type="fixed">
-    <origin xyz="0 0.163 -0.004" rpy="-1.5708 0 3.14159"/>
+    <origin xyz="0 0.163 -0.004" rpy="-1.5708 0 -3.14159"/>
     <parent link="l4_l_2"/>
     <child link="feet_4"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from motor_2 to l4_l_2 -->
   <joint name="fl_l4_l3" type="revolute">
-    <origin xyz="-0.159217 -0.0159373 -0.0735" rpy="0 -0 -2.1293"/>
+    <origin xyz="-0.159217 -0.0159373 -0.0735" rpy="0 0 -2.1293"/>
     <parent link="motor_2"/>
     <child link="l4_l_2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from motor to motor_2 -->
   <joint name="fl_m2_s2" type="revolute">
@@ -678,17 +1556,15 @@
     <parent link="motor"/>
     <child link="motor_2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
   <!-- Joint from back_plate to motor -->
   <joint name="fl_m1_s1" type="revolute">
-    <origin xyz="0.0549617 -0.114368 7.33841e-06" rpy="1.5708 -0 -3.14159"/>
+    <origin xyz="0.123368 0.0549617 -0.00849266" rpy="1.5708 -0 -1.5708"/>
     <parent link="back_plate"/>
     <child link="motor"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="12" lower="-3.14" upper="3.14"/>
-    <joint_properties friction="0.5"/>
+    <limit effort="10" velocity="10" lower="-3.14" upper="3.14"/>
   </joint>
 
   <ros2_control name="MujocoSystem" type="system">

@@ -34,7 +34,7 @@ namespace gaits
 class GaitScheduler
 {
 public:
-    GaitScheduler() : gait_(gaits::STAND) {}
+    GaitScheduler() : gait_(gaits::TROT) {}
     explicit GaitScheduler(const GaitDefinition& gait) : gait_(gait) {}
 
     void advance(double dt)

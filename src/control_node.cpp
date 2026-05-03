@@ -41,7 +41,7 @@ public:
     {
 
         std::string package_path = ament_index_cpp::get_package_share_directory("quadruped_control");
-        std::string urdf_file = package_path + "/description/isaac_sim/quadro.urdf";        
+        std::string urdf_file = package_path + "/description/quadro.xacro";        
 
         try
         {
@@ -139,9 +139,9 @@ private:
 
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        // Robot body frame: x=lateral, y=forward — swap from ROS cmd_vel convention
+        // Robot body frame now matches ROS Rep-103 convention (X=forward, Y=left)
         controller_.setDesiredVelocity(
-            Eigen::Vector3d(msg->linear.y, msg->linear.x, msg->linear.z),
+            Eigen::Vector3d(msg->linear.x, msg->linear.y, msg->linear.z),
             Eigen::Vector3d(msg->angular.x, msg->angular.y, msg->angular.z));
     }
 
