@@ -15,6 +15,7 @@ class QuadroModel;
 struct LegTarget {
     Eigen::Vector3d foot_pos = Eigen::Vector3d::Zero();  // world frame
     Eigen::Vector3d foot_vel = Eigen::Vector3d::Zero();  // world frame
+    Eigen::Vector3d foot_acc = Eigen::Vector3d::Zero();  // world frame
 };
 
 struct SwingState {
@@ -69,6 +70,10 @@ private:
     /// Analytical time-derivative of evaluateSwing
     Eigen::Vector3d evaluateSwingVelocity(const SwingState& state, double phase,
                                           double phase_rate) const;
+
+    /// Analytical second time-derivative of evaluateSwing (world frame)
+    Eigen::Vector3d evaluateSwingAcceleration(const SwingState& state, double phase,
+                                              double phase_rate) const;
 
     std::array<SwingState, NUM_LEGS> swing_states_;
 

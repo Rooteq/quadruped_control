@@ -63,6 +63,16 @@ public:
     const Eigen::VectorXd& jointEfforts() const { return effort_; }
     const Eigen::VectorXd& gravityCompensation() const { return gravity_canonical_; }
 
+    /// Non-linear effects (C·v + g) in canonical (JointIdx) order — use for swing
+    /// torque feedforward: `tau += nle[base + j]`
+    const Eigen::VectorXd& nonlinearEffects() const { return nle_canonical_; }
+
+    /// Symmetrized joint-space inertia matrix (nv × nv) in Pinocchio order
+    const Eigen::MatrixXd& massMatrix() const { return data_.M; }
+
+    /// Generalized velocity in Pinocchio order (length nv)
+    const Eigen::VectorXd& dqPin() const { return dq_pin_; }
+
     /// Foot position in world frame (from Pinocchio FK, updated by updateState)
     Eigen::Vector3d footPosition(int leg_idx) const;
 
@@ -71,6 +81,14 @@ public:
 
     /// 3×3 foot Jacobian: linear velocity in world frame, columns = leg's 3 joints only
     Eigen::Matrix3d footJacobian(int leg_idx) const;
+
+    /// Full 3×nv linear part of the foot Jacobian in WORLD frame.
+    /// Used for operational-space inertia: Λ = (J·M⁻¹·Jᵀ)⁻¹.
+    Eigen::Matrix<double, 3, Eigen::Dynamic> footFullJacobianLinear(int leg_idx) const;
+
+    /// Linear part of Jdot·v at the foot, expressed in WORLD frame (3-vector).
+    /// Used as feedforward in operational space: f_ff = Λ·(a_des − Jdot·v).
+    Eigen::Vector3d footJdotV(int leg_idx) const;
 
     /// Hip joint position in world frame
     Eigen::Vector3d hipPosition(int leg_idx) const;
@@ -97,6 +115,12 @@ public:
     const Eigen::Matrix3d& bodyYawRotation() const { return R_z_; }
     const Eigen::Matrix3d& bodyToWorldRotation() const { return R_b_w_; }
 
+    /// base_link world position (from odometry, set in updateBaseState).
+    /// Use this — NOT stateVector()[3:5] — when transforming body-frame foot
+    /// offsets to world frame. stateVector() position is the CoM (MPC convention)
+    /// and differs from base_link by data_.com[0] − base_link.
+    const Eigen::Vector3d& bodyPosition() const { return base_position_; }
+
     const pinocchio::Model& pinocchioModel() const { return model_; }
     pinocchio::Data& pinocchioData() { return data_; }
     const pinocchio::Data& pinocchioData() const { return data_; }
@@ -116,6 +140,9 @@ private:
 
     Eigen::VectorXd gravity_canonical_;
 
+    // Non-linear effects (C·v + g) remapped to canonical (JointIdx) order
+    Eigen::VectorXd nle_canonical_;
+
     // canonical_to_pin_[i] = Pinocchio's q-index for canonical joint i
     std::array<int, NUM_JOINTS> canonical_to_pin_{};
     // canonical_to_pin_v_[i] = Pinocchio's v-index for canonical joint i
@@ -130,6 +157,7 @@ private:
     // Cached physical parameters (computed once in constructor)
     Eigen::Matrix3d R_z_          = Eigen::Matrix3d::Identity(); // yaw-only body→world rotation
     Eigen::Matrix3d R_b_w_        = Eigen::Matrix3d::Identity(); // full body→world rotation
+    Eigen::Vector3d base_position_ = Eigen::Vector3d::Zero();    // base_link world position from odom
 
 
     Eigen::Matrix<double, 13, 13> Ac;

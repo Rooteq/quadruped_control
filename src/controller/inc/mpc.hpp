@@ -100,10 +100,10 @@ private:
     static constexpr int N_CON   = 4 * static_cast<int>(NUM_LEGS) * HORIZON_STEPS; // 160
 
     // ── Tuning parameters ─────────────────────────────────────────
-    static constexpr double mu_     = 0.6;    // friction coefficient
+    static constexpr double mu_     = 0.8;    // friction coefficient
     static constexpr double fz_min_ = 1.0;    // min normal GRF [N]
-    static constexpr double fz_max_ = 70.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
-    static constexpr double alpha_  = 1e-6;   // regularisation (force magnitude)
+    static constexpr double fz_max_ = 170.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
+    static constexpr double alpha_  = 1e-5;   // regularisation (force magnitude)
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     static constexpr double Q_WEIGHTS[N_STATE] = {

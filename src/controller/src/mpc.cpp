@@ -25,10 +25,14 @@ void MPC::update(const QuadroModel& model,
 
 void MPC::calculateDynamicsMatrices()
 {
-    // ── Ac ────────────────────────────────────────────────────────
     // State layout: x = [φ θ ψ | px py pz | ωx ωy ωz | vx vy vz | -g]
     //               idx  0 1 2    3  4  5    6  7  8    9 10 11   12
-    // Average yaw over horizon for Ac (Section IV-C of MPC paper).
+
+    // ── Single average yaw for both Ac and Bd (matches Python) ───
+    // Python builds RzT once from yaw_avg and reuses it for the rpy<-omega
+    // term in Ac AND for the 2nd-order rpy ZOH term in every Bd[n]. We do the
+    // same here — the previous per-step yaw in Bd was inconsistent with the
+    // single-yaw Ac and diverges from the reference behaviour.
     double avg_yaw = 0.0;
     for (int i = 0; i < HORIZON_STEPS; ++i)
         avg_yaw += x_ref_[i][2];
@@ -42,18 +46,25 @@ void MPC::calculateDynamicsMatrices()
             -sy, cy, 0.0,
              0.0, 0.0, 1.0;
 
+    // ── Ac ────────────────────────────────────────────────────────
     Ac_.setZero();
     Ac_.block<3, 3>(0, 6) = Rz_T;                        // Θ̇ = Rz^T · ω
     Ac_.block<3, 3>(3, 9) = Eigen::Matrix3d::Identity(); // ṗ = v
-    Ac_(11, 12)           = 1.0;                          // p̈_z += gravity state
+    Ac_(11, 12)           = 1.0;                          // v̇_z += -g  (via x[12] = -g)
 
-    // ── Ad: matrix exponential ZOH ────────────────────────────────
-    Ad_ = (Ac_ * MPC_DT).exp();
+    // ── Ad: Euler 1st-order + explicit 2nd-order gravity coupling ─
+    // Python uses a pure Euler Ad and adds a separate gd vector for the
+    // 2nd-order gravity terms (gd[0:3] = ½·g·dt² for pos, gd[6:9] = g·dt for vel).
+    // In our 13-state formulation those terms live in Ad: vz gets the 1st-order
+    // contribution from Ac(11,12)·dt, and pz gets the 2nd-order contribution
+    // from (½·Ac²·dt²)(5,12) = ½·dt². Both then propagate the constant -g held
+    // in x[12], so we don't need a separate gd vector.
+    Ad_ = Eigen::Matrix<double, 13, 13>::Identity() + Ac_ * MPC_DT;
+    Ad_(5, 12) = 0.5 * MPC_DT * MPC_DT;                  // pz += ½·(-g)·dt²
 
     // ── Bc[n] and Bd[n] — per horizon step ───────────────────────
-    // r = foot_world - ref_com_world_at_n : both in world frame, matches Python.
-    // Rz_T is built from the DESIRED yaw at each horizon step (x_ref_[n][2]),
-    // not the actual current yaw — the rotation changes as the robot turns.
+    // r = foot_world − ref_com_world_at_n : both in world frame, matches Python.
+    // Rz_T uses the SAME yaw_avg for every horizon step (matches Python).
     const Eigen::Matrix3d& I_hat     = body_inertia_;
     const Eigen::Matrix3d  I_hat_inv = I_hat.inverse();
     const Eigen::Matrix3d  I3_over_m = Eigen::Matrix3d::Identity() / mass_;
@@ -64,15 +75,7 @@ void MPC::calculateDynamicsMatrices()
         Bc_[n].setZero();
         Bd_[n].setZero();
 
-        // Desired yaw at this horizon step → Rz^T for RPY rows of Bd
-        const double psi_n = x_ref_[n][2];
-        const double cp_n  = std::cos(psi_n), sp_n = std::sin(psi_n);
-        Eigen::Matrix3d Rz_n_T;
-        Rz_n_T <<  cp_n,  sp_n, 0.0,
-                  -sp_n,  cp_n, 0.0,
-                    0.0,   0.0, 1.0;
-
-        // Reference COM at this step — foot lever arm in world frame
+        // Reference COM at this step (Python: pos_traj_world[:, n]).
         const Eigen::Vector3d com_pos_n(x_ref_[n][3], x_ref_[n][4], x_ref_[n][5]);
 
         for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
@@ -83,15 +86,15 @@ void MPC::calculateDynamicsMatrices()
             const Eigen::Vector3d r        = foot_positions_[i] - com_pos_n;
             const Eigen::Matrix3d I_inv_sk = I_hat_inv * skewSymmetric(r);
 
-            // Bc: continuous-time input map (12×12, no gravity row)
-            Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // Δω rows
-            Bc_[n].block<3, 3>(9, 3 * i) = I3_over_m;  // Δv rows
+            // Bc: continuous-time input map (no gravity row)
+            Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // ω̇ rows
+            Bc_[n].block<3, 3>(9, 3 * i) = I3_over_m;  // v̇ rows
 
-            // Bd: ZOH with 2nd-order terms (12×12)
+            // Bd: 1st-order ZOH for ω/v, 2nd-order ZOH for rpy/pos
             Bd_[n].block<3, 3>(6, 3 * i) = MPC_DT * I_inv_sk;
             Bd_[n].block<3, 3>(9, 3 * i) = MPC_DT * I3_over_m;
-            Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_n_T * I_inv_sk;  // RPY 2nd-order
-            Bd_[n].block<3, 3>(3, 3 * i) = half_dt2 * I3_over_m;           // pos 2nd-order
+            Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_T * I_inv_sk;  // single yaw_avg RzT
+            Bd_[n].block<3, 3>(3, 3 * i) = half_dt2 * I3_over_m;
         }
     }
 }

@@ -113,12 +113,14 @@ private:
         Eigen::Map<const Eigen::VectorXd> effort(joint_snap_.effort.data(), quadro::NUM_JOINTS);
         controller_.updateState(q, dq, effort);
 
-
-        // auto& pino_data = controller_.quadro_model_.pinocchioData();
-        // RCLCPP_INFO(this->get_logger(), "vcom: [%.3f, %.3f, %.3f]",
-            // pino_data.vcom[0][0], pino_data.vcom[0][1], pino_data.vcom[0][2]);
-        // RCLCPP_INFO(this->get_logger(), "com: [%.3f, %.3f, %.3f]",
-        //     pino_data.com[0][0], pino_data.com[0][1], pino_data.com[0][2]);
+        // const auto& pino_data = controller_.quadro_model_.pinocchioData();
+        // const auto& base_state = controller_.quadro_model_.stateVector();
+        // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
+        //     "com [%.3f %.3f %.3f]  vcom [%.3f %.3f %.3f]  base_pos [%.3f %.3f %.3f]  base_vel [%.3f %.3f %.3f]",
+        //     pino_data.com[0][0],  pino_data.com[0][1],  pino_data.com[0][2],
+        //     pino_data.vcom[0][0], pino_data.vcom[0][1], pino_data.vcom[0][2],
+        //     base_state[3],  base_state[4],  base_state[5],
+        //     base_state[9],  base_state[10], base_state[11]);
     }
 
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
