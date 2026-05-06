@@ -94,15 +94,17 @@ public:
 
     void updateMPC()
     {
-        std::array<Eigen::Vector3d, NUM_LEGS> footprints;
-        for (int i = 0; i < 4; ++i) {
-            if (gait_scheduler_.inStance(i)) {
-                footprints[i] = quadro_model_.footPosition(i);
-            } else {
-                footprints[i] = trajectory_generator_.getLandingPos(i);
-            }
-        }
-        mpc_.update(quadro_model_, desired_angular_vel_, desired_linear_vel_, x_ref_, gait_scheduler_, footprints);
+        // Per-horizon-step lever arms (matches Python's r_*_traj_world): for each
+        // step, each leg gets either zero (swing) or the lever planned at its
+        // last takeoff (stance). MPC's B[n] uses these directly.
+        std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS> levers;
+        trajectory_generator_.computeHorizonLevers<HORIZON_STEPS>(
+            quadro_model_, gait_scheduler_,
+            desired_linear_vel_, desired_angular_vel_,
+            MPC_DT, levers);
+
+        mpc_.update(quadro_model_, desired_angular_vel_, desired_linear_vel_,
+                    x_ref_, gait_scheduler_, levers);
     }
 
     /// Run MPC solve and copy resulting GRFs into grfs_.

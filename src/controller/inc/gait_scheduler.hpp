@@ -94,6 +94,27 @@ public:
         return table;
     }
 
+    /// Per-leg stance/swing mask at the future-time offset `t` (seconds) from
+    /// the current phase_. Matches Python's `gait.compute_current_mask(time_now + t)`,
+    /// which is uncentered (no dt/2 shift). Use this for transition detection in
+    /// the per-horizon-step lever planner — keep it separate from contactTable()
+    /// (which centers samples) so the dynamics-side logic mirrors Python exactly.
+    std::array<bool, NUM_LEGS> contactMaskAt(double t) const
+    {
+        std::array<bool, NUM_LEGS> mask{};
+        const double phase_offset_t = t / gait_.period;
+        for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
+        {
+            const double future_phase = std::fmod(
+                phase_ + gait_.phase_offsets[leg] + phase_offset_t, 1.0);
+            mask[leg] = (future_phase < gait_.duty_cycle);
+        }
+        return mask;
+    }
+
+    double stanceTime() const { return gait_.duty_cycle * gait_.period; }
+    double swingTime()  const { return (1.0 - gait_.duty_cycle) * gait_.period; }
+
     double phase() const { return phase_; }
     const GaitDefinition& gait() const { return gait_; }
 

@@ -8,14 +8,13 @@ void MPC::update(const QuadroModel& model,
                  const Eigen::Vector3d& linear_vel_cmd,
                  const std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>& x_ref,
                  const GaitScheduler& gait_scheduler,
-                 const std::array<Eigen::Vector3d, NUM_LEGS>& foot_positions)
+                 const std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS>& levers)
 {
     x0_           = model.stateVector();
     mass_         = model.mass();
     body_inertia_ = model.bodyInertia();
 
-    for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
-        foot_positions_[i] = foot_positions[i];
+    levers_ = levers;
 
     angular_vel_cmd_  = angular_vel_cmd;
     linear_vel_cmd_   = linear_vel_cmd;
@@ -75,16 +74,16 @@ void MPC::calculateDynamicsMatrices()
         Bc_[n].setZero();
         Bd_[n].setZero();
 
-        // Reference COM at this step (Python: pos_traj_world[:, n]).
-        const Eigen::Vector3d com_pos_n(x_ref_[n][3], x_ref_[n][4], x_ref_[n][5]);
-
         for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
         {
             if (!contact_schedule_[n][i]) continue;
 
-            // r = foot_world − ref_COM_world_at_n  (world frame, matches Python)
-            const Eigen::Vector3d r        = foot_positions_[i] - com_pos_n;
-            const Eigen::Matrix3d I_inv_sk = I_hat_inv * skewSymmetric(r);
+            // levers_[n][i] = foot_world − base_traj_world for this leg at step n
+            // (already computed by TrajectoryGenerator::computeHorizonLevers,
+            // mirrors Python's r_*_traj_world). Zero on swing steps; held
+            // constant per stance phase at the value planned at takeoff.
+            const Eigen::Vector3d& r        = levers_[n][i];
+            const Eigen::Matrix3d  I_inv_sk = I_hat_inv * skewSymmetric(r);
 
             // Bc: continuous-time input map (no gravity row)
             Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // ω̇ rows

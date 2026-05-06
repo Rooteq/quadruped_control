@@ -18,10 +18,14 @@
 using namespace std::chrono_literals;
 
 // ── Timer periods ────────────────────────────────────────────────
-static constexpr auto CONTROL_PERIOD  = 3333us;  // ~300 Hz
-static constexpr auto PLANNING_PERIOD = 33ms;     // ~30 Hz
-static constexpr auto MPC_PERIOD      = 33ms;     // ~30 Hz
-static constexpr double PLANNING_DT   = 0.033;    // seconds, matches PLANNING_PERIOD
+// Planning rate bumped from 30 Hz to 60 Hz: leg targets (foot pos/vel/acc) are
+// re-computed every 16.7 ms instead of 33 ms, halving the staleness the 300 Hz
+// control loop sees. Foot-velocity Kd no longer kicks against a 33 ms-old swing
+// trajectory step. Cheap CPU-wise — generate() is well under 1 ms.
+static constexpr auto CONTROL_PERIOD  = 3333us;       // ~300 Hz
+static constexpr auto PLANNING_PERIOD = 16667us;      // ~60 Hz
+static constexpr auto MPC_PERIOD      = 33ms;         // ~30 Hz (kept — matches MPC_DT)
+static constexpr double PLANNING_DT   = 1.0 / 60.0;   // seconds, matches PLANNING_PERIOD
 
 // ── Snapshot structs ─────────────────────────────────────────────
 
