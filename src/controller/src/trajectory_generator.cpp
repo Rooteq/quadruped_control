@@ -29,7 +29,23 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
     const Eigen::VectorXd& state = model.stateVector();
     Eigen::Vector3d base_pos_w = model.bodyPosition();          // base_link, not CoM
     Eigen::Vector3d base_vel_w(state[9], state[10], state[11]); // CoM linear velocity (world)
+    Eigen::Vector3d com_world(state[3], state[4], state[5]);    // CoM (state[3:5] is CoM)
     const Eigen::Matrix3d& R_b_w = model.bodyToWorldRotation();
+
+    // Maintain pos_des_world_: init to current CoM on first call, then clamp
+    // to within ±MAX_POS_ERROR of the actual CoM each tick. Mirrors Python's
+    // ComTraj.pos_des_world — slowly tracked anchor, never integrated by vel_des.
+    if (!pos_des_initialized_)
+    {
+        pos_des_world_       = com_world;
+        pos_des_initialized_ = true;
+    }
+    for (int axis = 0; axis < 2; ++axis)   // x, y only
+    {
+        const double d = pos_des_world_[axis] - com_world[axis];
+        if (d >  MAX_POS_ERROR) pos_des_world_[axis] = com_world[axis] + MAX_POS_ERROR;
+        if (d < -MAX_POS_ERROR) pos_des_world_[axis] = com_world[axis] - MAX_POS_ERROR;
+    }
 
     // Phase rate: how fast swing phase [0,1] advances per second
     const double swing_duration = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
@@ -69,7 +85,8 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
                 swing_states_[leg].liftoff_pos = p_world;
                 // Use ACTUAL body velocity for Raibert heuristic
                 swing_states_[leg].landing_pos = computeLandingPos(
-                    model, gait, leg, current_vel, desired_linear_vel, desired_angular_vel[2]);
+                    model, gait, leg, current_vel, desired_linear_vel,
+                    desired_angular_vel[2], pos_des_world_);
                 swing_states_[leg].active = true;
             }
 
@@ -89,7 +106,8 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     int leg_idx,
     const Eigen::Vector3d& current_vel,
     const Eigen::Vector3d& desired_vel,
-    double yaw_rate_des) const
+    double yaw_rate_des,
+    const Eigen::Vector3d& pos_des_world) const
 {
     // Use base_link (not CoM) as kinematic anchor — see calculateStand for rationale.
     Eigen::Vector3d base_pos = model.bodyPosition();
@@ -102,19 +120,37 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     double T         = t_swing + 0.5 * t_stance;
     double pred_time = T / 2.0;
 
-    double k_v_x = 0.4 * T;
-    double k_v_y = 0.2 * T;
+    // Body-frame x = forward → larger gain on forward axis (matches Python).
+    const double k_v_x = 0.4 * T;          // forward
+    const double k_v_y = 0.2 * T;          // lateral
+    const double k_p_x = 0.10;             // forward
+    const double k_p_y = 0.05;             // lateral
+
+    // Desired velocity in world frame (rotate body-frame cmd through R_z).
+    const Eigen::Vector3d des_vel_world = R_z * desired_vel;
 
     // Nominal: hip projected onto ground plane
     Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
 
-    // Drift: actual body velocity (world frame) — Raibert placement
-    Eigen::Vector3d drift(current_vel.x() * pred_time, current_vel.y() * pred_time, 0.0);
+    // Drift: integrate the DESIRED velocity over pred_time (matches Python's
+    // pos_drift_term — uses x_vel_des, NOT the current measured velocity).
+    // Using current_vel here is positive feedback on body drift; desired_vel
+    // makes the foot land where the body SHOULD be at mid-stance.
+    Eigen::Vector3d drift(des_vel_world.x() * pred_time,
+                          des_vel_world.y() * pred_time, 0.0);
 
-    // Velocity correction: desired_vel is body-frame, rotate to world frame first
-    Eigen::Vector3d des_vel_world = R_z * desired_vel;
+    // Velocity correction: damps body velocity error (foot lands in direction
+    // of velocity error, body decelerates as it passes over the foot).
     Eigen::Vector3d vel_correction(k_v_x * (current_vel.x() - des_vel_world.x()),
                                    k_v_y * (current_vel.y() - des_vel_world.y()),
+                                   0.0);
+
+    // Position correction: spring back toward the slowly-tracked anchor
+    // pos_des_world. Without this term the body has no equilibrium position —
+    // it just damps velocity and stays wherever it drifted.
+    const Eigen::VectorXd& state = model.stateVector();
+    Eigen::Vector3d pos_correction(k_p_x * (state[3] - pos_des_world.x()),
+                                   k_p_y * (state[4] - pos_des_world.y()),
                                    0.0);
 
     // Rotation correction: accounts for where the hip will be after yawing by dtheta
@@ -124,7 +160,7 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     double r_y = hip_pos_world.y() - base_pos.y();
     Eigen::Vector3d rot_correction(-dtheta * r_y, dtheta * r_x, 0.0);
 
-    return pos_nominal + drift + vel_correction + rot_correction;
+    return pos_nominal + drift + vel_correction + pos_correction + rot_correction;
 }
 
 Eigen::Vector3d TrajectoryGenerator::evaluateSwing(

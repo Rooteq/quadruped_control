@@ -26,12 +26,15 @@ public:
 
     /// Snapshot all data needed for this solve from the model and controller.
     /// Called once per mpcCallback before any matrix computation.
+    /// `levers[k][leg]` is the foot-to-CoM lever arm (world frame) for the leg
+    /// at horizon step k — zero for swing steps, held constant per stance phase.
+    /// Built by TrajectoryGenerator::computeHorizonLevers().
     void update(const QuadroModel& model,
                 const Eigen::Vector3d& angular_vel_cmd,
                 const Eigen::Vector3d& linear_vel_cmd,
                 const std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>& x_ref,
                 const GaitScheduler& gait_scheduler,
-                const std::array<Eigen::Vector3d, NUM_LEGS>& foot_positions);
+                const std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS>& levers);
 
     /// Build Ac/Ad (single, from average yaw) and Bc[n]/Bd[n] (per step, from
     /// per-step yaw and contact schedule). Must be called after update().
@@ -69,7 +72,10 @@ private:
     Eigen::Matrix<double, 13, 1>                             x0_           = Eigen::Matrix<double, 13, 1>::Zero();
     double                                                   mass_         = 0.0;
     Eigen::Matrix3d                                          body_inertia_ = Eigen::Matrix3d::Zero();
-    std::array<Eigen::Vector3d, NUM_LEGS>                    foot_positions_{};
+    // Per-horizon-step lever arms r[k][leg] = foot_world − base_traj_world.
+    // Built by TrajectoryGenerator::computeHorizonLevers() (mirrors Python's
+    // r_*_traj_world). Zero on swing steps, held constant during stance phases.
+    std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS> levers_{};
     Eigen::Vector3d                                          angular_vel_cmd_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d                                          linear_vel_cmd_  = Eigen::Vector3d::Zero();
     std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>  x_ref_{};
