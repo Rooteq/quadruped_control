@@ -5,6 +5,36 @@
 namespace quadro
 {
 
+namespace {
+
+// Robust ZYX RPY extraction from a 3×3 rotation matrix. Mirrors
+// pin.rpy.matrixToRpy: Eigen's eulerAngles(2,1,0) can return pitch
+// outside [-π/2, π/2] (the alternative valid representation). When
+// that happens we map back to the canonical form so yaw stays
+// continuous through the upright pose. Returns [roll, pitch, yaw].
+inline Eigen::Vector3d matrixToRpy(const Eigen::Matrix3d& R)
+{
+    constexpr double pi = M_PI;
+    Eigen::Vector3d res = R.eulerAngles(2, 1, 0).reverse();  // [roll, pitch, yaw]
+
+    if (res[1] < -pi / 2.0)
+        res[1] += 2.0 * pi;
+
+    if (res[1] > pi / 2.0)
+    {
+        res[1] = pi - res[1];
+        if (res[0] < 0.0)
+            res[0] += pi;
+        else
+            res[0] -= pi;
+        res[2] -= pi;
+    }
+
+    return res;
+}
+
+} // anonymous namespace
+
 QuadroModel::QuadroModel(const std::string& urdf_path)
 {
     try
@@ -92,7 +122,23 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     dq_ = dq;
     effort_ = effort;
 
-    // Remap to Pinocchio order for algorithms
+    // ── Resync FreeFlyer base entries from the latest cached odom snapshot ──
+    // updateBaseState() also writes these, but joint state and odom arrive on
+    // independent ROS callbacks. Without this resync, a jointStateCallback
+    // landing between two odom messages would call ccrba/CRBA below using a
+    // base orientation up to one odom-tick stale — at non-zero yaw the
+    // resulting world-frame centroidal inertia (data_.Ig) is rotated by the
+    // wrong angle, which matters most where sin/cos of yaw error peaks
+    // (i.e. multiples of 90°).
+    q_pin_.head<3>()       = base_position_;
+    // Pinocchio quaternion order: (x, y, z, w)
+    q_pin_.segment<4>(3)   = Eigen::Vector4d(base_quat_.x(), base_quat_.y(),
+                                             base_quat_.z(), base_quat_.w());
+    dq_pin_.head<3>()      = base_lin_vel_body_;
+    dq_pin_.segment<3>(3)  = base_ang_vel_body_;
+
+    // Remap joint q/dq to Pinocchio order for algorithms (base entries 0-6 / 0-5
+    // are already set above and intentionally untouched here).
     for (size_t i = 0; i < NUM_JOINTS; ++i)
     {
         q_pin_[canonical_to_pin_[i]] = q[i];
@@ -137,14 +183,24 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
                                    const Eigen::Vector3d& linear_velocity,
                                    const Eigen::Vector3d& angular_velocity)
 {
-    // Full rotation 
+    // Cache the raw odom snapshot. updateState() reads these every tick so
+    // ccrba sees the latest base orientation regardless of callback ordering.
+    base_quat_           = orientation;
+    base_lin_vel_body_   = linear_velocity;
+    base_ang_vel_body_   = angular_velocity;
+
+    // Full rotation
     R_b_w_ = orientation.toRotationMatrix();
 
-    // Z-Y-X Euler angles: eulerAngles(2,1,0) returns [yaw, pitch, roll]
-    Eigen::Vector3d euler = R_b_w_.eulerAngles(2, 1, 0);
-    x[0]  = euler[2];              // roll  (φ)
-    x[1]  = euler[1];              // pitch (θ)
-    x[2]  = euler[0];              // yaw   (ψ)
+    // Robust ZYX extraction (mirrors pin.rpy.matrixToRpy used in the Python
+    // reference). Eigen's bare eulerAngles(2,1,0) can flip yaw by ±π near
+    // the upright pose because it returns the alternative representation
+    // with pitch in [π/2, π]; matrixToRpy() unwraps that back to the
+    // canonical form so yaw stays continuous and R_z stays correct.
+    const Eigen::Vector3d rpy = matrixToRpy(R_b_w_);
+    x[0]  = rpy[0];              // roll  (φ)
+    x[1]  = rpy[1];              // pitch (θ)
+    x[2]  = rpy[2];              // yaw   (ψ)
     // base_link world position — used by kinematic anchors (calculateStand,
     // computeLandingPos). Distinct from x[3:5] which is the CoM (MPC convention).
     base_position_ = position;

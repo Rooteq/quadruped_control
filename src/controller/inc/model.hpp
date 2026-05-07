@@ -159,6 +159,18 @@ private:
     Eigen::Matrix3d R_b_w_        = Eigen::Matrix3d::Identity(); // full body→world rotation
     Eigen::Vector3d base_position_ = Eigen::Vector3d::Zero();    // base_link world position from odom
 
+    // Latest base state cached from updateBaseState(). Used by updateState() to
+    // resync q_pin_/dq_pin_ before every Pinocchio call so CRBA/ccrba/FK never
+    // operate on a stale base orientation between odom updates. ROS delivers
+    // joint states and odom on separate callbacks, so without this resync a
+    // jointStateCallback fired between two odom messages would compute
+    // data_.Ig (the world-frame centroidal inertia) using whatever base
+    // quaternion happened to be in q_pin_ at the time — at non-zero yaw the
+    // resulting inertia tensor is rotated by the wrong angle.
+    Eigen::Quaterniond base_quat_      = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d   base_lin_vel_body_ = Eigen::Vector3d::Zero();
+    Eigen::Vector3d   base_ang_vel_body_ = Eigen::Vector3d::Zero();
+
 
     Eigen::Matrix<double, 13, 13> Ac;
     Eigen::Matrix<double, 13, 12> Bc;
