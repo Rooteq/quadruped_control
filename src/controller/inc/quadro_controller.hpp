@@ -126,31 +126,51 @@ public:
     void calculateDesiredBodyTrajectory()
     {
         const auto& x0 = quadro_model_.stateVector();
-        double yaw      = x0[2];
-        double yaw_rate = desired_angular_vel_[2];
+        const double yaw      = x0[2];
+        const double yaw_rate = desired_angular_vel_[2];
 
-        // Rotate body-frame cmd_vel into world frame
+        // Rotate body-frame cmd_vel into world frame (matches Python's
+        // ComTraj.generate_traj: vel_desired_world = R_z @ [vx_body, vy_body, 0]).
         const Eigen::Matrix3d& R_z = quadro_model_.bodyYawRotation();
-        Eigen::Vector3d vel_world  = R_z * desired_linear_vel_;
-        double vx_w = vel_world[0];
-        double vy_w = vel_world[1];
+        const Eigen::Vector3d vel_world = R_z * desired_linear_vel_;
+        const double vx_w = vel_world[0];
+        const double vy_w = vel_world[1];
 
-        // Integrate reference forward from the CURRENT actual state so that x_ref_[0]
-        // is always close to x0. This makes the B-matrix lever arm accurate at n=0,
-        // avoiding the mismatch that occurred when the robot deviated from the old anchor.
+        // ── pos_des_world: slowly-tracked anchor (Python's ComTraj.pos_des_world) ──
+        // Init to current CoM on first call, then each tick clamp to within
+        // ±MAX_REF_POS_ERROR of the actual CoM. This is what gives MPC a position
+        // setpoint to spring back to instead of integrating reference from wherever
+        // the body has drifted to. Z is overwritten with the explicit height target.
+        if (!ref_pos_des_initialized_)
+        {
+            ref_pos_des_world_ = Eigen::Vector3d(x0[3], x0[4], desired_z_height_);
+            ref_pos_des_initialized_ = true;
+        }
+        for (int axis = 0; axis < 2; ++axis)   // x, y only
+        {
+            const double d = ref_pos_des_world_[axis] - x0[3 + axis];
+            if (d >  MAX_REF_POS_ERROR) ref_pos_des_world_[axis] = x0[3 + axis] + MAX_REF_POS_ERROR;
+            if (d < -MAX_REF_POS_ERROR) ref_pos_des_world_[axis] = x0[3 + axis] - MAX_REF_POS_ERROR;
+        }
+        ref_pos_des_world_[2] = desired_z_height_;
+
+        // Integrate reference forward from the ANCHOR (not the current CoM). With
+        // vel_des = 0 this gives a constant pz/px/py reference that MPC can spring
+        // back to; with vel_des > 0 the reference walks forward at the desired rate
+        // from the anchor — matching Python's pos_traj_world = pos_des + v_w · t.
         for (int i = 0; i < HORIZON_STEPS; ++i)
         {
-            double t = (i + 1) * MPC_DT;
+            const double t = (i + 1) * MPC_DT;
 
             x_ref_[i].setZero();
-            x_ref_[i][2]  = yaw + yaw_rate * t;           // yaw
-            x_ref_[i][3]  = x0[3] + vx_w * t;             // px from actual current x
-            x_ref_[i][4]  = x0[4] + vy_w * t;             // py from actual current y
-            x_ref_[i][5]  = -TrajectoryGenerator::NOMINAL_HEIGHT; // pz desired height
-            x_ref_[i][8]  = yaw_rate;                      // wz
-            x_ref_[i][9]  = vx_w;                          // vx
-            x_ref_[i][10] = vy_w;                          // vy
-            x_ref_[i][12] = x0[12];                        // -g
+            x_ref_[i][2]  = yaw + yaw_rate * t;                       // yaw
+            x_ref_[i][3]  = ref_pos_des_world_[0] + vx_w * t;         // px from anchor
+            x_ref_[i][4]  = ref_pos_des_world_[1] + vy_w * t;         // py from anchor
+            x_ref_[i][5]  = ref_pos_des_world_[2];                    // pz held at desired
+            x_ref_[i][8]  = yaw_rate;                                 // wz
+            x_ref_[i][9]  = vx_w;                                     // vx
+            x_ref_[i][10] = vy_w;                                     // vy
+            x_ref_[i][12] = x0[12];                                   // -g
         }
     }
 
@@ -182,6 +202,21 @@ private:
 
     static constexpr double STAND_LOWER_DURATION = 3.0;  // seconds to reach nominal height
     static constexpr double STAND_HOLD_DURATION  = 1.5;  // seconds to hold before walking
+
+    // Reference-trajectory anchor (Python's ComTraj.pos_des_world). Initialised
+    // to the current CoM on the first MPC tick, then clamped to within
+    // ±MAX_REF_POS_ERROR of the CoM each tick. MPC integrates px/py from this
+    // anchor — gives an actual position setpoint to track instead of letting
+    // the reference drift along with the body.
+    Eigen::Vector3d ref_pos_des_world_      = Eigen::Vector3d::Zero();
+    bool            ref_pos_des_initialized_ = false;
+    static constexpr double MAX_REF_POS_ERROR = 0.1;   // metres (matches Python)
+
+    // Desired CoM/base height used as the pz reference. Python sets this from
+    // the user command (z_pos_des_body=0.27 in the trot example); we use the
+    // same nominal value. Make this a setter target if cmd_vel.linear.z is
+    // ever repurposed as a height setpoint.
+    double desired_z_height_ = -TrajectoryGenerator::NOMINAL_HEIGHT;  // 0.27 m
 
     // Reference trajectory — HORIZON_STEPS × 13-state vectors
     // x_ref_[n] = desired state at prediction step n
