@@ -16,8 +16,24 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-xacro \
     && rm -rf /var/lib/apt/lists/*
 
+# Install GPU drivers and rendering libraries (Mesa covers Intel/AMD, NVIDIA injected at runtime)
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-dri \
+    libglx-mesa0 \
+    libegl-mesa0 \
+    libegl1 \
+    libgles2 \
+    mesa-utils \
+    mesa-vulkan-drivers \
+    vulkan-tools \
+    libvulkan1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Default to EGL for MuJoCo GPU rendering (works headless and with display)
+ENV MUJOCO_GL=egl
+
 # Download and install MuJoCo (Update the version if needed)
-ARG MUJOCO_VERSION=3.1.5
+ARG MUJOCO_VERSION=3.8.0
 RUN mkdir -p /opt/mujoco && \
     wget https://github.com/google-deepmind/mujoco/releases/download/${MUJOCO_VERSION}/mujoco-${MUJOCO_VERSION}-linux-x86_64.tar.gz -O mujoco.tar.gz && \
     tar -xzf mujoco.tar.gz -C /opt/mujoco --strip-components=1 && \
@@ -35,11 +51,17 @@ RUN git clone https://github.com/coin-or/qpOASES.git /opt/qpOASES && \
     cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
     make -j$(nproc) && make install
 
-# Install CasADi with IPOPT support
+# Install OSQP
+RUN git clone --recursive https://github.com/osqp/osqp.git -b v0.6.3 /opt/osqp && \
+    cd /opt/osqp && mkdir build && cd build && \
+    cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+    make -j$(nproc) && make install
+
+# Install CasADi with IPOPT and OSQP support
 RUN apt-get update && apt-get install -y coinor-libipopt-dev && rm -rf /var/lib/apt/lists/*
 RUN git clone https://github.com/casadi/casadi.git -b 3.6.5 /opt/casadi && \
     cd /opt/casadi && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_IPOPT=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_IPOPT=ON -DWITH_OSQP=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
     make -j$(nproc) && make install
 
 # Setup a non-root user that matches the host user
