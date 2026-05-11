@@ -250,12 +250,12 @@ void MPC::run()
     for (int i = 0; i < nf; ++i)
         grfs_[i] = u_opt.segment<3>(3 * i);
 
-    if (++print_counter_ % 2 == 0) {
-        std::printf("[MPC GRF fz]  FL=%5.1f  FR=%5.1f  BL=%5.1f  BR=%5.1f  N  |"
-                    "  pz=%.3f  vz=%.3f  mass=%.2f\n",
-                    grfs_[0].z(), grfs_[1].z(), grfs_[2].z(), grfs_[3].z(),
-                    x0_[5], x0_[11], mass_);
-    }
+    // if (++print_counter_ % 2 == 0) {
+    //     std::printf("[MPC GRF fz]  FL=%5.1f  FR=%5.1f  BL=%5.1f  BR=%5.1f  N  |"
+    //                 "  pz=%.3f  vz=%.3f  mass=%.2f\n",
+    //                 grfs_[0].z(), grfs_[1].z(), grfs_[2].z(), grfs_[3].z(),
+    //                 x0_[5], x0_[11], mass_);
+    // }
 }
 
 
@@ -457,11 +457,11 @@ void MPC::run_casadi()
             double(z_dm(NDYN + 3*leg + 1)),
             double(z_dm(NDYN + 3*leg + 2)));
 
-    if (++print_counter_ % 2 == 0)
-        std::printf("[MPC GRF fz]  FL=%5.1f  FR=%5.1f  BL=%5.1f  BR=%5.1f  N  |"
-                    "  pz=%.3f  vz=%.3f  mass=%.2f\n",
-                    grfs_[0].z(), grfs_[1].z(), grfs_[2].z(), grfs_[3].z(),
-                    x0_[5], x0_[11], mass_);
+    // if (++print_counter_ % 2 == 0)
+    //     std::printf("[MPC GRF fz]  FL=%5.1f  FR=%5.1f  BL=%5.1f  BR=%5.1f  N  |"
+    //                 "  pz=%.3f  vz=%.3f  mass=%.2f\n",
+    //                 grfs_[0].z(), grfs_[1].z(), grfs_[2].z(), grfs_[3].z(),
+    //                 x0_[5], x0_[11], mass_);
 }
 
 } // namespace quadro

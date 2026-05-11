@@ -186,11 +186,15 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     // Cache the raw odom snapshot. updateState() reads these every tick so
     // ccrba sees the latest base orientation regardless of callback ordering.
     base_quat_           = orientation;
-    base_lin_vel_body_   = linear_velocity;
-    base_ang_vel_body_   = angular_velocity;
-
-    // Full rotation
+    // Full rotation must be set before the velocity conversion below.
     R_b_w_ = orientation.toRotationMatrix();
+
+    // MuJoCo's freejoint qvel[0:3] is world-frame linear velocity.
+    // Pinocchio's FreeFlyer dq[0:3] expects LOCAL (body) frame.
+    // Store the body-frame version so updateState() feeds Pinocchio correctly.
+    base_lin_vel_body_   = R_b_w_.transpose() * linear_velocity;  // world → body
+    // MuJoCo's freejoint qvel[3:6] is body-frame angular velocity — store as-is.
+    base_ang_vel_body_   = angular_velocity;
 
     // Robust ZYX extraction (mirrors pin.rpy.matrixToRpy used in the Python
     // reference). Eigen's bare eulerAngles(2,1,0) can flip yaw by ±π near
@@ -212,18 +216,17 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     x[4]  = position[1];
     x[5]  = position[2];
 
-    // MPC state expects WORLD frame velocities for omega and v.
-    // ROS odometry topic usually reports twist in the body frame (child_frame_id).
-    // So we rotate them to world frame before setting MPC state.
-    Eigen::Vector3d v_world = R_b_w_ * linear_velocity;
+    // MPC state expects WORLD frame velocities.
+    // linear_velocity (from MuJoCo qvel[0:3]) is already in world frame.
+    // angular_velocity (from MuJoCo qvel[3:6]) is in body frame — rotate to world.
     Eigen::Vector3d w_world = R_b_w_ * angular_velocity;
 
     x[6]  = w_world[0];
     x[7]  = w_world[1];
     x[8]  = w_world[2];
-    x[9]  = v_world[0];
-    x[10] = v_world[1];
-    x[11] = v_world[2];
+    x[9]  = linear_velocity[0];
+    x[10] = linear_velocity[1];
+    x[11] = linear_velocity[2];
     x[12] = -g;
 
     // Yaw-only rotation: body frame → world frame (matches go2.R_z in Python ref)
@@ -237,9 +240,9 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     // pinocchio expects quaternion in order (x, y, z, w)
     q_pin_.segment<4>(3) = Eigen::Vector4d(orientation.x(), orientation.y(), orientation.z(), orientation.w());
 
-    // Pinocchio's spatial velocities for a FreeFlyer are expressed in the LOCAL joint frame.
-    // Since our linear/angular velocities from ROS are already in the body frame, we use them directly.
-    dq_pin_.head<3>() = linear_velocity;
+    // Pinocchio's FreeFlyer dq expects LOCAL (body) frame velocities.
+    // base_lin_vel_body_ was converted world→body above; angular_velocity is already body frame.
+    dq_pin_.head<3>()     = base_lin_vel_body_;
     dq_pin_.segment<3>(3) = angular_velocity;
 }
 
