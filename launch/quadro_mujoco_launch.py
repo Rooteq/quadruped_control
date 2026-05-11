@@ -79,13 +79,19 @@ def launch_setup(context, *args, **kwargs):
         arguments=["-d", rviz_config_file],
     ))
 
-    torque_controller = Node(
-        package='quadro',
-        executable='torque_controller',
-        name='torque_controller',
-        arguments=[robot_desc, 'link'],
-        output='screen'
-    )
+    nodes.append(Node(
+        package="quadruped_control",
+        executable="control_node",
+        name="controller",
+        output="both"
+    ))
+    # torque_controller = Node(
+    #     package='quadro',
+    #     executable='torque_controller',
+    #     name='torque_controller',
+    #     arguments=[robot_desc, 'link'],
+    #     output='screen'
+    # )
 
     return nodes
 
