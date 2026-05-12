@@ -58,7 +58,14 @@ def launch_setup(context, *args, **kwargs):
         on_exit=Shutdown()
     ))
 
-    controllers_to_spawn = ["joint_state_broadcaster", "forward_effort_controller"]
+    controllers_to_spawn = [
+        "joint_state_broadcaster",
+        "br_foot_broadcaster",
+        "bl_foot_broadcaster",
+        "fr_foot_broadcaster",
+        "fl_foot_broadcaster",
+        "forward_effort_controller",
+    ]
     for controller in controllers_to_spawn:
        nodes.append(
             Node(

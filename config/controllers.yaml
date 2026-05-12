@@ -26,3 +26,43 @@ forward_effort_controller:
       - br_l4_l3
 
     interface_name: effort
+
+br_foot_broadcaster:
+  ros__parameters:
+    type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    frame_id: feet
+    interface_names:
+      force:
+        x: br_foot/force.x
+        y: br_foot/force.y
+        z: br_foot/force.z
+
+bl_foot_broadcaster:
+  ros__parameters:
+    type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    frame_id: feet_2
+    interface_names:
+      force:
+        x: bl_foot/force.x
+        y: bl_foot/force.y
+        z: bl_foot/force.z
+
+fr_foot_broadcaster:
+  ros__parameters:
+    type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    frame_id: feet_3
+    interface_names:
+      force:
+        x: fr_foot/force.x
+        y: fr_foot/force.y
+        z: fr_foot/force.z
+
+fl_foot_broadcaster:
+  ros__parameters:
+    type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    frame_id: feet_4
+    interface_names:
+      force:
+        x: fl_foot/force.x
+        y: fl_foot/force.y
+        z: fl_foot/force.z
