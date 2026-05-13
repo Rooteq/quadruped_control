@@ -38,8 +38,6 @@ public:
     std::array<LegTarget, NUM_LEGS> generate(
         const QuadroModel& model,
         const GaitScheduler& gait,
-        const Eigen::Vector3d& desired_linear_vel,
-        const Eigen::Vector3d& desired_angular_vel,
         const Eigen::Vector3d& current_vel);
 
     static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
@@ -160,17 +158,14 @@ public:
     }
 
 private:
-    /// Raibert foot placement heuristic (body frame).
-    /// `pos_des_world` is the slowly-tracked anchor used for the k_p position-
-    /// correction term (matches Python's `go2.{x,y}_pos_des_world`).
+    /// Foot placement based purely on current body state — hip projected to
+    /// ground plus drift from current linear velocity and current yaw rate
+    /// integrated over pred_time. No reference / desired anchors.
     Eigen::Vector3d computeLandingPos(
         const QuadroModel& model,
         const GaitScheduler& gait,
         int leg_idx,
-        const Eigen::Vector3d& current_vel,
-        const Eigen::Vector3d& desired_vel,
-        double yaw_rate_des,
-        const Eigen::Vector3d& pos_des_world) const;
+        const Eigen::Vector3d& current_vel) const;
 
     /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;
@@ -184,15 +179,6 @@ private:
                                               double phase_rate) const;
 
     std::array<SwingState, NUM_LEGS> swing_states_;
-
-    // Slowly-tracked anchor for the Raibert k_p position-correction term.
-    // Initialised to the CoM on the first generate() call, then clamped each
-    // tick to within ±MAX_POS_ERROR of the actual CoM. Matches Python's
-    // ComTraj.pos_des_world (no integration with vel_des — it's a anchor, not
-    // a setpoint trajectory).
-    Eigen::Vector3d pos_des_world_      = Eigen::Vector3d::Zero();
-    bool            pos_des_initialized_ = false;
-    static constexpr double MAX_POS_ERROR = 0.1;  // metres
 
     double dt_ = 0.033;
     // Eigen::Vector3d hipPos[NUM_LEGS] = {
