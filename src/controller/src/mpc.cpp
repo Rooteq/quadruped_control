@@ -64,15 +64,33 @@ void MPC::calculateDynamicsMatrices()
     // ── Bc[n] and Bd[n] — per horizon step ───────────────────────
     // r = foot_world − ref_com_world_at_n : both in world frame, matches Python.
     // Rz_T uses the SAME yaw_avg for every horizon step (matches Python).
-    const Eigen::Matrix3d& I_hat     = body_inertia_;
-    const Eigen::Matrix3d  I_hat_inv = I_hat.inverse();
-    const Eigen::Matrix3d  I3_over_m = Eigen::Matrix3d::Identity() / mass_;
+    // body_inertia_ is the WORLD-frame centroidal inertia at the CURRENT yaw ψ0
+    // (ccrba output for the present configuration). As the body yaws over the
+    // horizon the world-frame inertia rotates, I_world(ψ) = Rz(ψ)·I_body·Rz(ψ)ᵀ,
+    // so its inverse rotates the same way (Rz orthogonal):
+    //     I_world⁻¹(ψn) = RzΔ · I_world⁻¹(ψ0) · RzΔᵀ,   RzΔ = Rz(ψn − ψ0).
+    // We rotate the current world-frame inverse by the predicted per-step yaw
+    // delta instead of reusing one fixed inertia for the whole horizon.
+    const Eigen::Matrix3d  I_world_inv0 = body_inertia_.inverse();   // I_world⁻¹(ψ0)
+    const Eigen::Matrix3d  I3_over_m    = Eigen::Matrix3d::Identity() / mass_;
     const double half_dt2 = 0.5 * MPC_DT * MPC_DT;
+    const double yaw0     = x0_[2];
 
     for (int n = 0; n < HORIZON_STEPS; ++n)
     {
         Bc_[n].setZero();
         Bd_[n].setZero();
+
+        // Rotate the world-frame inverse inertia to the body's predicted
+        // orientation at step n. ψn comes from the reference trajectory
+        // (ψ0 + yaw_rate·tn), so this tracks the desired angular velocity.
+        const double dyaw = x_ref_[n][2] - yaw0;
+        const double cd = std::cos(dyaw), sd = std::sin(dyaw);
+        Eigen::Matrix3d RzD;
+        RzD << cd, -sd, 0.0,
+               sd,  cd, 0.0,
+               0.0, 0.0, 1.0;
+        const Eigen::Matrix3d I_world_inv_n = RzD * I_world_inv0 * RzD.transpose();
 
         for (int i = 0; i < static_cast<int>(NUM_LEGS); ++i)
         {
@@ -83,7 +101,7 @@ void MPC::calculateDynamicsMatrices()
             // mirrors Python's r_*_traj_world). Zero on swing steps; held
             // constant per stance phase at the value planned at takeoff.
             const Eigen::Vector3d& r        = levers_[n][i];
-            const Eigen::Matrix3d  I_inv_sk = I_hat_inv * skewSymmetric(r);
+            const Eigen::Matrix3d  I_inv_sk = I_world_inv_n * skewSymmetric(r);
 
             // Bc: continuous-time input map (no gravity row)
             Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // ω̇ rows
@@ -92,7 +110,7 @@ void MPC::calculateDynamicsMatrices()
             // Bd: 1st-order ZOH for ω/v, 2nd-order ZOH for rpy/pos
             Bd_[n].block<3, 3>(6, 3 * i) = MPC_DT * I_inv_sk;
             Bd_[n].block<3, 3>(9, 3 * i) = MPC_DT * I3_over_m;
-            Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_T * I_inv_sk;  // single yaw_avg RzT
+            Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_T * I_inv_sk;  // Euler map still yaw_avg
             Bd_[n].block<3, 3>(3, 3 * i) = half_dt2 * I3_over_m;
         }
     }
