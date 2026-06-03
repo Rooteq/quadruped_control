@@ -40,7 +40,9 @@ public:
     {
         gait_scheduler_.advance(planning_dt_);
         leg_targets_ = trajectory_generator_.generate(
-            quadro_model_, gait_scheduler_, quadro_model_.stateVector().segment<3>(9));
+            quadro_model_, gait_scheduler_,
+            quadro_model_.stateVector().segment<3>(9),
+            desired_linear_vel_, desired_angular_vel_);
     }
 
     bool isStandingComplete() const { return standing_complete_; }

@@ -20,7 +20,9 @@ TrajectoryGenerator::TrajectoryGenerator(double dt) : dt_(dt)
 std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
     const QuadroModel& model,
     const GaitScheduler& gait,
-    const Eigen::Vector3d& current_vel)
+    const Eigen::Vector3d& current_vel,
+    const Eigen::Vector3d& desired_linear_vel,
+    const Eigen::Vector3d& desired_angular_vel)
 {
     std::array<LegTarget, NUM_LEGS> targets{};
 
@@ -61,7 +63,8 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
             {
                 swing_states_[leg].liftoff_pos = p_world;
                 swing_states_[leg].landing_pos = computeLandingPos(
-                    model, gait, leg, current_vel);
+                    model, gait, leg, current_vel,
+                    desired_linear_vel, desired_angular_vel[2]);
                 swing_states_[leg].active = true;
             }
 
@@ -79,37 +82,50 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const QuadroModel& model,
     const GaitScheduler& gait,
     int leg_idx,
-    const Eigen::Vector3d& current_vel) const
+    const Eigen::Vector3d& current_vel,
+    const Eigen::Vector3d& desired_vel,
+    double desired_yaw_rate) const
 {
-    // Use base_link (not CoM) as kinematic anchor — see calculateStand for rationale.
+    // p_h,i — current hip projected onto ground plane (paper eq 6 "ph,i").
+    // The small 0.02 m z lift is foot-landing clearance, not on the paper.
     Eigen::Vector3d base_pos = model.bodyPosition();
-    base_pos.z() = 0.0;                                  // project onto ground plane
-    Eigen::Matrix3d R_z = model.bodyYawRotation();
-    Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
+    base_pos.z() = 0.0;
+    const Eigen::Matrix3d& R_z = model.bodyYawRotation();
+    const Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
+    const Eigen::Vector3d p_h(hip_pos_world.x(), hip_pos_world.y(), 0.02);
 
-    double t_swing   = (1.0 - gait.gait().duty_cycle) * gait.gait().period;
-    double t_stance  = gait.gait().duty_cycle * gait.gait().period;
-    double T         = t_swing + 0.5 * t_stance;
-    double pred_time = T / 2.0;
+    // T_cφ/2 — half of scheduled stance time (paper eq 6 time scaling).
+    const double t_stance    = gait.gait().duty_cycle * gait.gait().period;
+    const double half_stance = 0.5 * t_stance;
 
-    // Nominal: hip projected onto ground plane
-    Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
+    // Desired velocity rotated to world frame (cmd is body-frame).
+    const Eigen::Vector3d v_des_world = R_z * desired_vel;
 
-    // Linear drift: integrate CURRENT body velocity over pred_time — foot lands
-    // where the hip will be at mid-stance given how the body is actually moving.
-    Eigen::Vector3d drift(current_vel.x() * pred_time,
-                          current_vel.y() * pred_time, 0.0);
+    // ── Raibert heuristic: (T_cφ/2)·v_des  ────────────────────────────
+    const Eigen::Vector3d raibert(half_stance * v_des_world.x(),
+                                  half_stance * v_des_world.y(),
+                                  0.0);
 
-    // Rotation correction: integrate CURRENT yaw rate (state[8] is world-frame
-    // ωz) over pred_time, and offset each foot by the resulting arc swept by
-    // its hip lever (r_x, r_y measured in world frame).
-    const double current_yaw_rate = model.stateVector()[8];
-    const double dtheta = current_yaw_rate * pred_time;
+    // ── Capture point: sqrt(z0/|g|)·(v − v_des)  ──────────────────────
+    // z0 = nominal locomotion height; NOMINAL_HEIGHT is the body-frame foot z
+    // when standing (negative), so |NOMINAL_HEIGHT| gives the CoM height above
+    // the feet. g = 9.81 m/s².
+    constexpr double g_mag = 9.81;
+    const double z0    = std::abs(NOMINAL_HEIGHT);
+    const double k_cap = std::sqrt(z0 / g_mag);
+    const Eigen::Vector3d capture(k_cap * (current_vel.x() - v_des_world.x()),
+                                  k_cap * (current_vel.y() - v_des_world.y()),
+                                  0.0);
+
+    // ── Rot correction (extension, not in paper) ──────────────────────
+    // Predict hip displacement due to COMMANDED yaw rate over T_cφ/2 —
+    // self-consistent with the Raibert term (both use desired motion).
+    const double dtheta = desired_yaw_rate * half_stance;
     const double r_x = hip_pos_world.x() - base_pos.x();
     const double r_y = hip_pos_world.y() - base_pos.y();
-    Eigen::Vector3d rot_correction(-dtheta * r_y, dtheta * r_x, 0.0);
+    const Eigen::Vector3d rot_correction(-dtheta * r_y, dtheta * r_x, 0.0);
 
-    return pos_nominal + drift + rot_correction;
+    return p_h + raibert + capture + rot_correction;
 }
 
 Eigen::Vector3d TrajectoryGenerator::evaluateSwing(

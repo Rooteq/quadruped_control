@@ -35,10 +35,14 @@ public:
 
     /// Generate desired foot Cartesian targets for all legs.
     /// Swing legs track Bezier arc; stance legs hold last landing position.
+    /// `desired_linear_vel` is the commanded body-frame velocity; `desired_angular_vel`
+    /// is the commanded body-frame angular velocity (only z used).
     std::array<LegTarget, NUM_LEGS> generate(
         const QuadroModel& model,
         const GaitScheduler& gait,
-        const Eigen::Vector3d& current_vel);
+        const Eigen::Vector3d& current_vel,
+        const Eigen::Vector3d& desired_linear_vel,
+        const Eigen::Vector3d& desired_angular_vel);
 
     static constexpr double NOMINAL_HEIGHT = -0.27;  // body-frame z of feet when standing
 
@@ -158,14 +162,17 @@ public:
     }
 
 private:
-    /// Foot placement based purely on current body state — hip projected to
-    /// ground plus drift from current linear velocity and current yaw rate
-    /// integrated over pred_time. No reference / desired anchors.
+    /// Foot placement combining the Raibert heuristic with the capture-point
+    /// correction from MIT Cheetah 3 (Bledt 2018, eq 6):
+    ///     p_step = p_hip + (T_stance/2)·v_des + sqrt(z0/g)·(v − v_des) + rot_correction
+    /// Rot_correction is an extension (not in the paper) for turning support.
     Eigen::Vector3d computeLandingPos(
         const QuadroModel& model,
         const GaitScheduler& gait,
         int leg_idx,
-        const Eigen::Vector3d& current_vel) const;
+        const Eigen::Vector3d& current_vel,
+        const Eigen::Vector3d& desired_vel,
+        double desired_yaw_rate) const;
 
     /// Bezier swing arc: smooth-step XY, cubic Bezier Z
     Eigen::Vector3d evaluateSwing(const SwingState& state, double phase) const;
