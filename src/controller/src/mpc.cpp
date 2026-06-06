@@ -51,35 +51,26 @@ void MPC::calculateDynamicsMatrices()
     Ac_.block<3, 3>(3, 9) = Eigen::Matrix3d::Identity(); // ṗ = v
     Ac_(11, 12)           = 1.0;                          // v̇_z += -g  (via x[12] = -g)
 
-    // ── Ad: Euler 1st-order + explicit 2nd-order gravity coupling ─
-    // Python uses a pure Euler Ad and adds a separate gd vector for the
-    // 2nd-order gravity terms (gd[0:3] = ½·g·dt² for pos, gd[6:9] = g·dt for vel).
-    // In our 13-state formulation those terms live in Ad: vz gets the 1st-order
-    // contribution from Ac(11,12)·dt, and pz gets the 2nd-order contribution
-    // from (½·Ac²·dt²)(5,12) = ½·dt². Both then propagate the constant -g held
-    // in x[12], so we don't need a separate gd vector.
+    // ── Ad: pure first-order Euler ────────────────────────────────
+    //     Ad = I + Ac · T
+    // All higher-order cross-coupling terms (including the ½dt² gravity drop
+    // into pz) are dropped. Equivalent to truncating the matrix-exponential
+    // ZOH expansion at first order.
     Ad_ = Eigen::Matrix<double, 13, 13>::Identity() + Ac_ * MPC_DT;
-    Ad_(5, 12) = 0.5 * MPC_DT * MPC_DT;                  // pz += ½·(-g)·dt²
 
-    // ── Bc[n] and Bd[n] — per horizon step ───────────────────────
-    // r = foot_world − ref_com_world_at_n : both in world frame, matches Python.
-    // Rz_T uses the SAME yaw_avg for every horizon step (matches Python).
+    // ── Bc[n] — per horizon step (continuous-time input map) ─────
     // body_inertia_ is the WORLD-frame centroidal inertia at the CURRENT yaw ψ0
     // (ccrba output for the present configuration). As the body yaws over the
     // horizon the world-frame inertia rotates, I_world(ψ) = Rz(ψ)·I_body·Rz(ψ)ᵀ,
     // so its inverse rotates the same way (Rz orthogonal):
     //     I_world⁻¹(ψn) = RzΔ · I_world⁻¹(ψ0) · RzΔᵀ,   RzΔ = Rz(ψn − ψ0).
-    // We rotate the current world-frame inverse by the predicted per-step yaw
-    // delta instead of reusing one fixed inertia for the whole horizon.
     const Eigen::Matrix3d  I_world_inv0 = body_inertia_.inverse();   // I_world⁻¹(ψ0)
     const Eigen::Matrix3d  I3_over_m    = Eigen::Matrix3d::Identity() / mass_;
-    const double half_dt2 = 0.5 * MPC_DT * MPC_DT;
-    const double yaw0     = x0_[2];
+    const double yaw0                   = x0_[2];
 
     for (int n = 0; n < HORIZON_STEPS; ++n)
     {
         Bc_[n].setZero();
-        Bd_[n].setZero();
 
         // Rotate the world-frame inverse inertia to the body's predicted
         // orientation at step n. ψn comes from the reference trajectory
@@ -97,22 +88,22 @@ void MPC::calculateDynamicsMatrices()
             if (!contact_schedule_[n][i]) continue;
 
             // levers_[n][i] = foot_world − base_traj_world for this leg at step n
-            // (already computed by TrajectoryGenerator::computeHorizonLevers,
-            // mirrors Python's r_*_traj_world). Zero on swing steps; held
-            // constant per stance phase at the value planned at takeoff.
+            // (already computed by TrajectoryGenerator::computeHorizonLevers).
+            // Zero on swing steps; held constant per stance phase at the
+            // value planned at takeoff.
             const Eigen::Vector3d& r        = levers_[n][i];
             const Eigen::Matrix3d  I_inv_sk = I_world_inv_n * skewSymmetric(r);
 
-            // Bc: continuous-time input map (no gravity row)
             Bc_[n].block<3, 3>(6, 3 * i) = I_inv_sk;   // ω̇ rows
             Bc_[n].block<3, 3>(9, 3 * i) = I3_over_m;  // v̇ rows
-
-            // Bd: 1st-order ZOH for ω/v, 2nd-order ZOH for rpy/pos
-            Bd_[n].block<3, 3>(6, 3 * i) = MPC_DT * I_inv_sk;
-            Bd_[n].block<3, 3>(9, 3 * i) = MPC_DT * I3_over_m;
-            Bd_[n].block<3, 3>(0, 3 * i) = half_dt2 * Rz_T * I_inv_sk;  // Euler map still yaw_avg
-            Bd_[n].block<3, 3>(3, 3 * i) = half_dt2 * I3_over_m;
         }
+
+        // ── Bd[n]: pure first-order Euler ─────────────────────────
+        //     Bd[n] = T · Bc[n]
+        // Force only enters ω/v rows at step k+1; orientation/position
+        // pick up the effect at step k+2 via Ad. The ½dt² cross-coupling
+        // blocks the previous version added by hand are dropped.
+        Bd_[n].noalias() = MPC_DT * Bc_[n];
     }
 }
 
