@@ -98,23 +98,33 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const double t_stance    = gait.gait().duty_cycle * gait.gait().period;
     const double half_stance = 0.5 * t_stance;
 
+    // ── Foot-placement gains ──────────────────────────────────────────
+    // Paper eq 6 uses both terms with implicit unit gain. Raibert gain > 1
+    // makes the foot land further in the direction of motion (longer stride,
+    // body catches itself further out — useful when the robot tends to fall
+    // forward or undersamples the contact patch). Capture gain > 1 makes the
+    // velocity-error correction more aggressive (more damping at the cost of
+    // potential overshoot).
+    constexpr double K_RAIBERT = 1.0;   // step further forward (paper = 1.0)
+    constexpr double K_CAPTURE = 1.0;   // stronger velocity-error correction
+
     // Desired velocity rotated to world frame (cmd is body-frame).
     const Eigen::Vector3d v_des_world = R_z * desired_vel;
 
-    // ── Raibert heuristic: (T_cφ/2)·v_des  ────────────────────────────
-    const Eigen::Vector3d raibert(half_stance * v_des_world.x(),
-                                  half_stance * v_des_world.y(),
+    // ── Raibert heuristic: K_RAIBERT · (T_cφ/2) · v_des  ──────────────
+    const Eigen::Vector3d raibert(K_RAIBERT * half_stance * v_des_world.x(),
+                                  K_RAIBERT * half_stance * v_des_world.y(),
                                   0.0);
 
-    // ── Capture point: sqrt(z0/|g|)·(v − v_des)  ──────────────────────
+    // ── Capture point: K_CAPTURE · sqrt(z0/|g|) · (v − v_des)  ────────
     // z0 = nominal locomotion height; NOMINAL_HEIGHT is the body-frame foot z
     // when standing (negative), so |NOMINAL_HEIGHT| gives the CoM height above
     // the feet. g = 9.81 m/s².
     constexpr double g_mag = 9.81;
     const double z0    = std::abs(NOMINAL_HEIGHT);
     const double k_cap = std::sqrt(z0 / g_mag);
-    const Eigen::Vector3d capture(k_cap * (current_vel.x() - v_des_world.x()),
-                                  k_cap * (current_vel.y() - v_des_world.y()),
+    const Eigen::Vector3d capture(K_CAPTURE * k_cap * (current_vel.x() - v_des_world.x()),
+                                  K_CAPTURE * k_cap * (current_vel.y() - v_des_world.y()),
                                   0.0);
 
     // ── Rot correction (extension, not in paper) ──────────────────────

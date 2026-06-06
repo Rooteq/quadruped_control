@@ -27,55 +27,45 @@ void MPC::calculateDynamicsMatrices()
     // State layout: x = [φ θ ψ | px py pz | ωx ωy ωz | vx vy vz | -g]
     //               idx  0 1 2    3  4  5    6  7  8    9 10 11   12
 
-    // ── Single average yaw for both Ac and Bd (matches Python) ───
-    // Python builds RzT once from yaw_avg and reuses it for the rpy<-omega
-    // term in Ac AND for the 2nd-order rpy ZOH term in every Bd[n]. We do the
-    // same here — the previous per-step yaw in Bd was inconsistent with the
-    // single-yaw Ac and diverges from the reference behaviour.
-    double avg_yaw = 0.0;
-    for (int i = 0; i < HORIZON_STEPS; ++i)
-        avg_yaw += x_ref_[i][2];
-    avg_yaw /= HORIZON_STEPS;
-
-    const double cy = std::cos(avg_yaw);
-    const double sy = std::sin(avg_yaw);
-
-    Eigen::Matrix3d Rz_T;
-    Rz_T <<  cy, sy, 0.0,
-            -sy, cy, 0.0,
-             0.0, 0.0, 1.0;
-
-    // ── Ac ────────────────────────────────────────────────────────
-    Ac_.setZero();
-    Ac_.block<3, 3>(0, 6) = Rz_T;                        // Θ̇ = Rz^T · ω
-    Ac_.block<3, 3>(3, 9) = Eigen::Matrix3d::Identity(); // ṗ = v
-    Ac_(11, 12)           = 1.0;                          // v̇_z += -g  (via x[12] = -g)
-
-    // ── Ad: pure first-order Euler ────────────────────────────────
-    //     Ad = I + Ac · T
-    // All higher-order cross-coupling terms (including the ½dt² gravity drop
-    // into pz) are dropped. Equivalent to truncating the matrix-exponential
-    // ZOH expansion at first order.
-    Ad_ = Eigen::Matrix<double, 13, 13>::Identity() + Ac_ * MPC_DT;
-
-    // ── Bc[n] — per horizon step (continuous-time input map) ─────
-    // body_inertia_ is the WORLD-frame centroidal inertia at the CURRENT yaw ψ0
-    // (ccrba output for the present configuration). As the body yaws over the
-    // horizon the world-frame inertia rotates, I_world(ψ) = Rz(ψ)·I_body·Rz(ψ)ᵀ,
-    // so its inverse rotates the same way (Rz orthogonal):
-    //     I_world⁻¹(ψn) = RzΔ · I_world⁻¹(ψ0) · RzΔᵀ,   RzΔ = Rz(ψn − ψ0).
+    // ── Per-step Ac/Ad — driven by per-step reference yaw ─────────
+    // In the condensed formulation a single Ad (built from avg ψ_ref) is
+    // required so that Aqp = [Ad; Ad²; …] and Bqp's block-Toeplitz product
+    // are well defined. The sparse formulation does NOT need that — each
+    // dynamics row block can hold a different Ad[n] at no structural cost.
+    // We exploit that here by building Ac[n] / Ad[n] from the per-step
+    // reference yaw ψ_ref[n] directly, so the Θ̇ = Rzᵀ(ψ)·ω row block is
+    // accurate at every horizon step (no avg-yaw approximation).
     const Eigen::Matrix3d  I_world_inv0 = body_inertia_.inverse();   // I_world⁻¹(ψ0)
     const Eigen::Matrix3d  I3_over_m    = Eigen::Matrix3d::Identity() / mass_;
     const double yaw0                   = x0_[2];
 
     for (int n = 0; n < HORIZON_STEPS; ++n)
     {
+        const double psi_n = x_ref_[n][2];   // reference yaw at horizon step n
+
+        // Rzᵀ(ψ_n) — Euler-rate kinematics map at step n.
+        const double cy = std::cos(psi_n);
+        const double sy = std::sin(psi_n);
+        Eigen::Matrix3d Rz_T_n;
+        Rz_T_n <<  cy, sy, 0.0,
+                  -sy, cy, 0.0,
+                   0.0, 0.0, 1.0;
+
+        // ── Ac[n] ─────────────────────────────────────────────────
+        Ac_[n].setZero();
+        Ac_[n].block<3, 3>(0, 6) = Rz_T_n;                         // Θ̇ = Rzᵀ(ψ_n)·ω
+        Ac_[n].block<3, 3>(3, 9) = Eigen::Matrix3d::Identity();    // ṗ = v
+        Ac_[n](11, 12)           = 1.0;                             // v̇_z += -g via x[12]
+
+        // ── Ad[n]: pure first-order Euler ─────────────────────────
+        Ad_[n] = Eigen::Matrix<double, 13, 13>::Identity() + Ac_[n] * MPC_DT;
+
         Bc_[n].setZero();
 
         // Rotate the world-frame inverse inertia to the body's predicted
         // orientation at step n. ψn comes from the reference trajectory
         // (ψ0 + yaw_rate·tn), so this tracks the desired angular velocity.
-        const double dyaw = x_ref_[n][2] - yaw0;
+        const double dyaw = psi_n - yaw0;
         const double cd = std::cos(dyaw), sd = std::sin(dyaw);
         Eigen::Matrix3d RzD;
         RzD << cd, -sd, 0.0,
@@ -125,26 +115,31 @@ void MPC::run()
     for (int i = 0; i < k; ++i)
         X_ref_qp_.segment<N_STATE>(i * N_STATE) = x_ref_[i];
 
-    // ── 2. Build Aqp (N_PRED × N_STATE): row-block i = Ad^(i+1) ───────────
+    // ── 2. Build Aqp (N_PRED × N_STATE): row-block i = Ad[i]·…·Ad[0] ──────
+    // With per-step Ad, row block i is the cumulative product of all
+    // previous Ad transitions: x[i+1] = (∏_{l=0..i} Ad[l]) · x[0] + …
     {
-        Eigen::Matrix<double, N_STATE, N_STATE> Ad_pow = Ad_;
+        Eigen::Matrix<double, N_STATE, N_STATE> A_cumul =
+            Eigen::Matrix<double, N_STATE, N_STATE>::Identity();
         for (int i = 0; i < k; ++i)
         {
-            Aqp_.block<N_STATE, N_STATE>(i * N_STATE, 0) = Ad_pow;
-            Ad_pow = Ad_ * Ad_pow;
+            A_cumul = Ad_[i] * A_cumul;
+            Aqp_.block<N_STATE, N_STATE>(i * N_STATE, 0) = A_cumul;
         }
     }
 
-    // ── 3. Build Bqp (N_PRED × N_VAR): lower-triangular Toeplitz ──────────
-    // Bqp[i, j] = Ad^(i-j) · Bd[j]  for i >= j, else 0
+    // ── 3. Build Bqp (N_PRED × N_VAR): lower-triangular block convolution ─
+    // Bqp[i, j] = (∏_{l=j+1..i} Ad[l]) · Bd[j]   for i >= j, else 0.
+    // (Reduces to the Toeplitz Ad^(i-j)·Bd[j] when all Ad[l] are equal.)
     Bqp_.setZero();
     for (int j = 0; j < k; ++j)
     {
         Eigen::Matrix<double, N_STATE, N_FORCE> col = Bd_[j];
-        for (int i = j; i < k; ++i)
+        Bqp_.block<N_STATE, N_FORCE>(j * N_STATE, j * N_FORCE) = col;
+        for (int i = j + 1; i < k; ++i)
         {
+            col = Ad_[i] * col;
             Bqp_.block<N_STATE, N_FORCE>(i * N_STATE, j * N_FORCE) = col;
-            col = Ad_ * col;
         }
     }
 
@@ -298,11 +293,11 @@ void MPC::run_casadi()
             A_vals.push_back(1.0);
         }
         if (k > 0)
-            for (int i = 0; i < NX; ++i)            // -Ad on X_{k-1} sub-diagonal
+            for (int i = 0; i < NX; ++i)            // -Ad[k] on X_{k-1} sub-diagonal
                 for (int j = 0; j < NX; ++j) {
                     A_rows.push_back(k*NX + i);
                     A_cols.push_back((k-1)*NX + j);
-                    A_vals.push_back(-Ad_(i, j));
+                    A_vals.push_back(-Ad_[k](i, j));
                 }
         for (int i = 0; i < NX; ++i)                // -Bd_k on U_k block
             for (int j = 0; j < NU; ++j) {
@@ -388,11 +383,11 @@ void MPC::run_casadi()
     }
 
     // ── 4. lba / uba ────────────────────────────────────────────────────
-    // Dynamics: lb = ub = [Ad*x0; 0; ...; 0] (gravity in Ad, no gd needed)
+    // Dynamics: lb = ub = [Ad[0]*x0; 0; ...; 0] (gravity in Ad, no gd needed)
     // Friction:  lb = -inf; ub = 0 (stance) or +inf (swing, constraint inactive)
     const double INF = casadi::inf;
     std::vector<double> lba_vec(NCON, 0.0), uba_vec(NCON, 0.0);
-    const Eigen::Matrix<double, N_STATE, 1> beq0 = Ad_ * x0_;
+    const Eigen::Matrix<double, N_STATE, 1> beq0 = Ad_[0] * x0_;
     for (int i = 0; i < NX; ++i) { lba_vec[i] = uba_vec[i] = beq0[i]; }
     for (int k = 0; k < N; ++k)
         for (int leg = 0; leg < 4; ++leg) {

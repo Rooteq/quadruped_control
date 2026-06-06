@@ -47,8 +47,12 @@ public:
     void run_casadi();
 
     // ── Accessors ─────────────────────────────────────────────────
-    const Eigen::Matrix<double, 13, 13>& continuousA() const { return Ac_; }
-    const Eigen::Matrix<double, 13, 13>& discreteA()   const { return Ad_; }
+    // Per-step A matrices — index by horizon step [0, HORIZON_STEPS).
+    // Built from the per-step reference yaw ψ_ref[n] so the Θ̇ = Rzᵀ(ψ)·ω
+    // kinematics map is correct at each horizon step (no single-avg-yaw
+    // approximation).
+    const std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS>& continuousA() const { return Ac_; }
+    const std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS>& discreteA()   const { return Ad_; }
 
     // Per-step B matrices — index by horizon step [0, HORIZON_STEPS)
     const std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS>& continuousB() const { return Bc_; }
@@ -82,8 +86,12 @@ private:
     std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS>    contact_schedule_{};
 
     // ── Computed matrices ──────────────────────────────────────────
-    Eigen::Matrix<double, 13, 13> Ac_ = Eigen::Matrix<double, 13, 13>::Zero();
-    Eigen::Matrix<double, 13, 13> Ad_ = Eigen::Matrix<double, 13, 13>::Zero();
+    // Per-step Ac_[n] / Ad_[n] (13×13) built from the per-step reference
+    // yaw ψ_ref[n]. With the sparse QP formulation the per-step variation
+    // costs nothing structurally — only the numeric values in each row
+    // block of the dynamics-equality matrix change.
+    std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS> Ac_{};
+    std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS> Ad_{};
 
     // Per-step: Bc_[n] and Bd_[n] are 13×12 (4 legs × 3 forces)
     std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS> Bc_{};
