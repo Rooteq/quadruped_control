@@ -114,7 +114,7 @@ public:
     void runMPC()
     {
         mpc_.run_casadi(); // mpc_.run();
-        // mpc_.run();
+        // mpc_.run(); // mpc_.run();
         grfs_ = mpc_.groundReactionForces();
     }
 

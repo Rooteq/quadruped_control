@@ -40,9 +40,6 @@ public:
     /// per-step yaw and contact schedule). Must be called after update().
     void calculateDynamicsMatrices();
 
-    /// Solve QP and populate grfs_
-    void run();
-
     /// Solve QP using CasADi sparse formulation exactly like Python project
     void run_casadi();
 
