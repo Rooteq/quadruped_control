@@ -87,6 +87,9 @@ public:
             PLANNING_PERIOD,
             std::bind(&QuadroController::planningCallback, this));
 
+        pub_grfs_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/mpc/grfs", 10);
+
+
         RCLCPP_INFO(this->get_logger(), "Controller started");
     }
 
@@ -191,6 +194,23 @@ private:
             std::lock_guard<std::mutex> lock(grf_mutex_);
             controller_.runMPC();   // solves QP, writes grfs_
         }
+
+        {
+            std::array<Eigen::Vector3d, quadro::NUM_LEGS> grfs;
+            {
+                std::lock_guard<std::mutex> lock(grf_mutex_);
+                grfs = controller_.groundReactionForces();
+            }
+            std_msgs::msg::Float64MultiArray grf_msg;
+            grf_msg.data.resize(12);
+            for (size_t i = 0; i < quadro::NUM_LEGS; ++i) {
+                grf_msg.data[3*i + 0] = grfs[i].x();
+                grf_msg.data[3*i + 1] = grfs[i].y();
+                grf_msg.data[3*i + 2] = grfs[i].z();
+            }
+            pub_grfs_->publish(grf_msg);
+        }
+
     }
 
     void planningCallback()
@@ -277,6 +297,8 @@ private:
     rclcpp::TimerBase::SharedPtr control_timer_;   // 300 Hz
     rclcpp::TimerBase::SharedPtr mpc_timer_;        // 30 Hz
     rclcpp::TimerBase::SharedPtr planning_timer_;   // 30 Hz
+
+    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_grfs_;
 };
 
 int main(int argc, char** argv)

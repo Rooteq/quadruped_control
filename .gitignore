@@ -6,3 +6,6 @@ description/isaac_assets
 description/mujoco_assets
 .vscode
 *.md
+
+*.png
+test*
