@@ -17,8 +17,8 @@ from nav_msgs.msg import Odometry
 
 
 # Random-walk standard deviations per second (cumulative effect).
-POS_DRIFT_STD_PER_S = 0.01   # m / sqrt(s)   — slow position drift
-YAW_DRIFT_STD_PER_S = 0.01   # rad / sqrt(s) — slow yaw drift
+POS_DRIFT_STD_PER_S = 0.02   # m / sqrt(s)   — slow position drift
+YAW_DRIFT_STD_PER_S = 0.02   # rad / sqrt(s) — slow yaw drift
 
 # White-noise standard deviations per sample (instantaneous error on the twist).
 LIN_VEL_NOISE_STD = 0.01     # m/s
@@ -71,9 +71,13 @@ class OdomDriftSimulator(Node):
 
         # Random-walk increment: σ_step = σ_per_s · √dt.
         sqrt_dt = math.sqrt(dt)
-        for i in range(3):
-            self.pos_offset_[i] += random.gauss(0.0, POS_DRIFT_STD_PER_S * sqrt_dt)
-        self.yaw_offset_ += random.gauss(0.0, YAW_DRIFT_STD_PER_S * sqrt_dt)
+        # for i in range(3):
+        self.pos_offset_[0] += POS_DRIFT_STD_PER_S * sqrt_dt
+        self.pos_offset_[1] += POS_DRIFT_STD_PER_S * sqrt_dt
+        # self.yaw_offset_ += random.gauss(0.0, YAW_DRIFT_STD_PER_S * sqrt_dt)
+        self.yaw_offset_ += YAW_DRIFT_STD_PER_S * sqrt_dt
+            # self.pos_offset_[i] += random.gauss(0.0, POS_DRIFT_STD_PER_S * sqrt_dt)
+        # self.yaw_offset_ += random.gauss(0.0, YAW_DRIFT_STD_PER_S * sqrt_dt)
 
         # Drifted pose.
         out = Odometry()
