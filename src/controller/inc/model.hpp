@@ -23,8 +23,8 @@ static constexpr size_t NUM_LEGS = 4;
 static constexpr size_t JOINTS_PER_LEG = 3;
 
 // ── Canonical joint order ────────────────────────────────────────
-// Grouped by leg: FL, FR, BL, BR × (hip, knee, ankle)
-// Use JointIdx to index into q, dq, effort, Kp, Kd arrays.
+// Grouped by leg: FL, FR, BL, BR × (hip, knee, ankle).
+// JointIdx indexes the q, dq, effort, Kp, Kd arrays.
 
 enum LegIdx  { FL = 0, FR = 1, BL = 2, BR = 3 };
 enum JointIdx {
@@ -47,9 +47,8 @@ class QuadroModel
 public:
     QuadroModel() = default;
 
-    /// Build model from URDF. joint_names defines the canonical ordering —
-    /// the mapping from your JointIdx to Pinocchio's internal order is
-    /// computed once here.
+    /// Build model from URDF. The mapping from canonical JointIdx order to
+    /// Pinocchio's internal order is computed once here.
     explicit QuadroModel(const std::string& urdf_path);
 
     /// Update joint state and run Pinocchio forward algorithms.
@@ -57,13 +56,13 @@ public:
     void updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& dq,
                      const Eigen::VectorXd& effort);
 
-    // State in canonical order — index with JointIdx: q_[FL_HIP], dq_[BR_ANKLE], etc.
+    // State in canonical order — indexed by JointIdx: q_[FL_HIP], dq_[BR_ANKLE], etc.
     const Eigen::VectorXd& jointPositions() const { return q_; }
     const Eigen::VectorXd& jointVelocities() const { return dq_; }
     const Eigen::VectorXd& jointEfforts() const { return effort_; }
     const Eigen::VectorXd& gravityCompensation() const { return gravity_canonical_; }
 
-    /// Non-linear effects (C·v + g) in canonical (JointIdx) order — use for swing
+    /// Non-linear effects (C·v + g) in canonical (JointIdx) order — used for swing
     /// torque feedforward: `tau += nle[base + j]`
     const Eigen::VectorXd& nonlinearEffects() const { return nle_canonical_; }
 
@@ -105,20 +104,19 @@ public:
     /// Total robot mass (from data.Ig)
     double mass() const { return data_.Ig.mass(); }
 
-    /// Composite inertia tensor of the whole robot about its COM,
-    /// expressed in the world frame at neutral config (cached at construction).
-    /// Used as _BI in the MPC rigid-body model (eq. 14-15 in the paper).
+    /// Composite inertia tensor of the whole robot about its COM, expressed in
+    /// the world frame. Used as the body inertia in the MPC rigid-body model.
     Eigen::Matrix3d bodyInertia() const { return data_.Ig.inertia().matrix(); }
 
-    /// Yaw-only rotation matrix R_z(ψ): rotates body-frame vectors to world frame.
-    /// Equivalent to go2.R_z in the Python reference. Updated by updateBaseState().
+    /// Yaw-only rotation matrix R_z(ψ): rotates body-frame vectors to world
+    /// frame. Updated by updateBaseState().
     const Eigen::Matrix3d& bodyYawRotation() const { return R_z_; }
     const Eigen::Matrix3d& bodyToWorldRotation() const { return R_b_w_; }
 
     /// base_link world position (from odometry, set in updateBaseState).
-    /// Use this — NOT stateVector()[3:5] — when transforming body-frame foot
-    /// offsets to world frame. stateVector() position is the CoM (MPC convention)
-    /// and differs from base_link by data_.com[0] − base_link.
+    /// This — NOT stateVector()[3:5] — is the anchor for transforming body-frame
+    /// foot offsets to world frame. stateVector() position is the CoM (MPC
+    /// convention) and differs from base_link by data_.com[0] − base_link.
     const Eigen::Vector3d& bodyPosition() const { return base_position_; }
 
     const pinocchio::Model& pinocchioModel() const { return model_; }
@@ -161,23 +159,16 @@ private:
 
     // Latest base state cached from updateBaseState(). Used by updateState() to
     // resync q_pin_/dq_pin_ before every Pinocchio call so CRBA/ccrba/FK never
-    // operate on a stale base orientation between odom updates. ROS delivers
-    // joint states and odom on separate callbacks, so without this resync a
-    // jointStateCallback fired between two odom messages would compute
-    // data_.Ig (the world-frame centroidal inertia) using whatever base
-    // quaternion happened to be in q_pin_ at the time — at non-zero yaw the
-    // resulting inertia tensor is rotated by the wrong angle.
+    // operate on a stale base orientation between odom updates (joint states and
+    // odom arrive on separate ROS callbacks).
     Eigen::Quaterniond base_quat_      = Eigen::Quaterniond::Identity();
     Eigen::Vector3d   base_lin_vel_body_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d   base_ang_vel_body_ = Eigen::Vector3d::Zero();
 
 
-    Eigen::Matrix<double, 13, 13> Ac;
-    Eigen::Matrix<double, 13, 12> Bc;
     Eigen::Matrix<double, 13, 1> x;
 
     double g = 9.81;
-
 };
     
 } // namespace quadro

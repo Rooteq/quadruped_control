@@ -7,11 +7,10 @@ namespace quadro
 
 namespace {
 
-// Robust ZYX RPY extraction from a 3×3 rotation matrix. Mirrors
-// pin.rpy.matrixToRpy: Eigen's eulerAngles(2,1,0) can return pitch
-// outside [-π/2, π/2] (the alternative valid representation). When
-// that happens we map back to the canonical form so yaw stays
-// continuous through the upright pose. Returns [roll, pitch, yaw].
+// Robust ZYX RPY extraction from a 3×3 rotation matrix. Eigen's
+// eulerAngles(2,1,0) can return pitch outside [-π/2, π/2] (the alternative
+// valid representation); that case is mapped back to the canonical form so yaw
+// stays continuous through the upright pose. Returns [roll, pitch, yaw].
 inline Eigen::Vector3d matrixToRpy(const Eigen::Matrix3d& R)
 {
     constexpr double pi = M_PI;
@@ -49,7 +48,7 @@ QuadroModel::QuadroModel(const std::string& urdf_path)
 
         q_pin_.resize(model_.nq);
         dq_pin_.resize(model_.nv);
-q_pin_ = pinocchio::neutral(model_);
+        q_pin_ = pinocchio::neutral(model_);
         dq_pin_.setZero();
 
         x.setZero();
@@ -76,9 +75,6 @@ q_pin_ = pinocchio::neutral(model_);
         }
 
         // Cache foot and hip frame IDs (order: FL, FR, BL, BR)
-        // const std::array<std::string, NUM_LEGS> foot_frame_names = {
-        //     "fl_feet", "fr_feet", "bl_feet", "br_feet"
-        // };
         const std::array<std::string, NUM_LEGS> foot_frame_names = {
             "feet_4", "feet_3", "feet_2", "feet"
         };
@@ -98,7 +94,7 @@ q_pin_ = pinocchio::neutral(model_);
             hip_frame_ids_[i] = model_.getFrameId(hip_frame_names[i]);
         }
 
-        // Print joint mapping for verification — move joints manually to confirm ordering
+        // Print joint mapping for verification
         std::printf("[JointMap] canonical_idx  pin_q  pin_v  joint_name\n");
         for (size_t i = 0; i < NUM_JOINTS; ++i)
         {
@@ -122,14 +118,9 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
     dq_ = dq;
     effort_ = effort;
 
-    // ── Resync FreeFlyer base entries from the latest cached odom snapshot ──
-    // updateBaseState() also writes these, but joint state and odom arrive on
-    // independent ROS callbacks. Without this resync, a jointStateCallback
-    // landing between two odom messages would call ccrba/CRBA below using a
-    // base orientation up to one odom-tick stale — at non-zero yaw the
-    // resulting world-frame centroidal inertia (data_.Ig) is rotated by the
-    // wrong angle, which matters most where sin/cos of yaw error peaks
-    // (i.e. multiples of 90°).
+    // Resync FreeFlyer base entries from the latest cached odom snapshot so
+    // ccrba/CRBA/FK below never run on a base orientation stale by up to one
+    // odom tick (joint state and odom arrive on independent ROS callbacks).
     q_pin_.head<3>()       = base_position_;
     // Pinocchio quaternion order: (x, y, z, w)
     q_pin_.segment<4>(3)   = Eigen::Vector4d(base_quat_.x(), base_quat_.y(),
@@ -167,9 +158,9 @@ void QuadroModel::updateState(const Eigen::VectorXd& q, const Eigen::VectorXd& d
         nle_canonical_[i]     = data_.nle[canonical_to_pin_v_[i]];
     }
 
-    // Use Pinocchio CoM as the position/velocity in the MPC state. This matches
-    // the Python reference (centroidal MPC about the CoM, not base_link). Both
-    // data_.com[0] and data_.vcom[0] are expressed in the WORLD frame.
+    // Pinocchio CoM is the position/velocity in the MPC state (centroidal MPC
+    // about the CoM, not base_link). data_.com[0] and data_.vcom[0] are
+    // expressed in the WORLD frame.
     x[3] = data_.com[0][0];
     x[4] = data_.com[0][1];
     x[5] = data_.com[0][2];
@@ -185,7 +176,7 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
 {
     // Cache the raw odom snapshot. updateState() reads these every tick so
     // ccrba sees the latest base orientation regardless of callback ordering.
-    base_quat_           = orientation;
+    base_quat_ = orientation;
     // Full rotation must be set before the velocity conversion below.
     R_b_w_ = orientation.toRotationMatrix();
 
@@ -196,11 +187,8 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     // MuJoCo's freejoint qvel[3:6] is body-frame angular velocity — store as-is.
     base_ang_vel_body_   = angular_velocity;
 
-    // Robust ZYX extraction (mirrors pin.rpy.matrixToRpy used in the Python
-    // reference). Eigen's bare eulerAngles(2,1,0) can flip yaw by ±π near
-    // the upright pose because it returns the alternative representation
-    // with pitch in [π/2, π]; matrixToRpy() unwraps that back to the
-    // canonical form so yaw stays continuous and R_z stays correct.
+    // Robust ZYX extraction (see matrixToRpy) so yaw stays continuous and R_z
+    // stays correct near the upright pose.
     const Eigen::Vector3d rpy = matrixToRpy(R_b_w_);
     x[0]  = rpy[0];              // roll  (φ)
     x[1]  = rpy[1];              // pitch (θ)
@@ -209,9 +197,9 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     // computeLandingPos). Distinct from x[3:5] which is the CoM (MPC convention).
     base_position_ = position;
 
-    // x[3:5] (position) and x[9:11] (linear velocity) are written by updateState()
-    // from data_.com[0] / data_.vcom[0] (CoM in world frame). Set fallbacks here
-    // in case updateState() has not yet been called.
+    // x[3:5] (position) and x[9:11] (linear velocity) are overwritten by
+    // updateState() from data_.com[0]/data_.vcom[0]. Set fallbacks here in case
+    // updateState() has not yet been called.
     x[3]  = position[0];
     x[4]  = position[1];
     x[5]  = position[2];
@@ -229,7 +217,7 @@ void QuadroModel::updateBaseState(const Eigen::Vector3d& position,
     x[11] = linear_velocity[2];
     x[12] = -g;
 
-    // Yaw-only rotation: body frame → world frame (matches go2.R_z in Python ref)
+    // Yaw-only rotation: body frame → world frame
     const double cy = std::cos(x[2]), sy = std::sin(x[2]);
     R_z_ <<  cy, -sy, 0.0,
              sy,  cy, 0.0,

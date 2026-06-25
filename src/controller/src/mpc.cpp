@@ -26,15 +26,10 @@ void MPC::calculateDynamicsMatrices()
 {
     // State layout: x = [φ θ ψ | px py pz | ωx ωy ωz | vx vy vz | -g]
     //               idx  0 1 2    3  4  5    6  7  8    9 10 11   12
-
-    // ── Per-step Ac/Ad — driven by per-step reference yaw ─────────
-    // In the condensed formulation a single Ad (built from avg ψ_ref) is
-    // required so that Aqp = [Ad; Ad²; …] and Bqp's block-Toeplitz product
-    // are well defined. The sparse formulation does NOT need that — each
-    // dynamics row block can hold a different Ad[n] at no structural cost.
-    // We exploit that here by building Ac[n] / Ad[n] from the per-step
-    // reference yaw ψ_ref[n] directly, so the Θ̇ = Rzᵀ(ψ)·ω row block is
-    // accurate at every horizon step (no avg-yaw approximation).
+    //
+    // The sparse formulation lets each dynamics row block hold a different
+    // Ad[n] at no structural cost, so Ac[n]/Ad[n] are built from the per-step
+    // reference yaw ψ_ref[n] directly (no avg-yaw approximation).
     const Eigen::Matrix3d  I_world_inv0 = body_inertia_.inverse();   // I_world⁻¹(ψ0)
     const Eigen::Matrix3d  I3_over_m    = Eigen::Matrix3d::Identity() / mass_;
     const double yaw0                   = x0_[2];
@@ -63,8 +58,7 @@ void MPC::calculateDynamicsMatrices()
         Bc_[n].setZero();
 
         // Rotate the world-frame inverse inertia to the body's predicted
-        // orientation at step n. ψn comes from the reference trajectory
-        // (ψ0 + yaw_rate·tn), so this tracks the desired angular velocity.
+        // orientation at step n (ψn from the reference trajectory).
         const double dyaw = psi_n - yaw0;
         const double cd = std::cos(dyaw), sd = std::sin(dyaw);
         Eigen::Matrix3d RzD;
@@ -77,10 +71,6 @@ void MPC::calculateDynamicsMatrices()
         {
             if (!contact_schedule_[n][i]) continue;
 
-            // levers_[n][i] = foot_world − base_traj_world for this leg at step n
-            // (already computed by TrajectoryGenerator::computeHorizonLevers).
-            // Zero on swing steps; held constant per stance phase at the
-            // value planned at takeoff.
             const Eigen::Vector3d& r        = levers_[n][i];
             const Eigen::Matrix3d  I_inv_sk = I_world_inv_n * skewSymmetric(r);
 
@@ -88,11 +78,7 @@ void MPC::calculateDynamicsMatrices()
             Bc_[n].block<3, 3>(9, 3 * i) = I3_over_m;  // v̇ rows
         }
 
-        // ── Bd[n]: pure first-order Euler ─────────────────────────
-        //     Bd[n] = T · Bc[n]
-        // Force only enters ω/v rows at step k+1; orientation/position
-        // pick up the effect at step k+2 via Ad. The ½dt² cross-coupling
-        // blocks the previous version added by hand are dropped.
+        // Bd[n] = dt · Bc[n] (first-order Euler)
         Bd_[n].noalias() = MPC_DT * Bc_[n];
     }
 }
@@ -168,11 +154,8 @@ void MPC::run_casadi()
     // ── 3. Build solver once (constant sparsity for H and A) ───────────
     if (!casadi_solver_built_)
     {
-        // libcasadi_conic_osqp.so was built from the same CasADi source tree as
-        // /usr/local/lib/libcasadi.so.3.7, so there is no ABI mismatch.
-        // It lives in the build dir until someone copies it to /usr/local/lib/.
-        // CASADIPATH lets the plugin loader find it; LD_LIBRARY_PATH lets dlopen
-        // resolve its runtime dependency on /opt/ros/jazzy/lib/libosqp.so.
+        // CASADIPATH lets the plugin loader find libcasadi_conic_osqp.so;
+        // LD_LIBRARY_PATH lets dlopen resolve its dependency on libosqp.so.
         const std::string casadi_build = "/home/rooteq/dev/libs/casadi/build/lib";
         const std::string osqp_ros     = "/opt/ros/jazzy/lib";
         {
@@ -304,12 +287,6 @@ void MPC::run_casadi()
             double(z_dm(NDYN + 3*leg)),
             double(z_dm(NDYN + 3*leg + 1)),
             double(z_dm(NDYN + 3*leg + 2)));
-
-    // if (++print_counter_ % 2 == 0)
-    //     std::printf("[MPC GRF fz]  FL=%5.1f  FR=%5.1f  BL=%5.1f  BR=%5.1f  N  |"
-    //                 "  pz=%.3f  vz=%.3f  mass=%.2f\n",
-    //                 grfs_[0].z(), grfs_[1].z(), grfs_[2].z(), grfs_[3].z(),
-    //                 x0_[5], x0_[11], mass_);
 }
 
 } // namespace quadro

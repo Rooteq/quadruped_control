@@ -39,6 +39,7 @@ class OdomLogger(Node):
         super().__init__("odom_logger")
         self._data = data
         self._origin = None
+        self._t0 = None
         self.create_subscription(Odometry, "/odom", self._cb, 10)
 
     def _cb(self, msg: Odometry):
@@ -47,6 +48,12 @@ class OdomLogger(Node):
         q = msg.pose.pose.orientation
         roll, _, yaw = quat_to_euler(q.x, q.y, q.z, q.w)
 
+        # Per-message time stamp (seconds), zeroed at the first message.
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        if self._t0 is None:
+            self._t0 = stamp
+        t = stamp - self._t0
+
         if self._origin is None:
             self._origin = (px, py)
 
@@ -54,9 +61,11 @@ class OdomLogger(Node):
         self._data["x"].append(px - ox)
         self._data["y"].append(py - oy)
         MAX = 2_500
+        self._data["t"].append(t)
         self._data["yaw"].append(math.degrees(yaw))
         self._data["roll"].append(math.degrees(roll))
         if len(self._data["yaw"]) > MAX:
+            self._data["t"].pop(0)
             self._data["yaw"].pop(0)
             self._data["roll"].pop(0)
 
@@ -68,7 +77,7 @@ def spin_ros(node):
 def main():
     rclpy.init()
 
-    data = {"x": [], "y": [], "yaw": [], "roll": []}
+    data = {"x": [], "y": [], "t": [], "yaw": [], "roll": []}
 
     node = OdomLogger(data)
     thread = threading.Thread(target=spin_ros, args=(node,), daemon=True)
@@ -87,12 +96,12 @@ def main():
     ax_xy.grid(True)
 
     ax_yaw.set_title("Yaw (world Z rotation)")
-    ax_yaw.set_xlabel("sample")
+    ax_yaw.set_xlabel("time [s]")
     ax_yaw.set_ylabel("yaw [deg]")
     ax_yaw.grid(True)
 
     ax_roll.set_title("Roll (body X rotation)")
-    ax_roll.set_xlabel("sample")
+    ax_roll.set_xlabel("time [s]")
     ax_roll.set_ylabel("roll [deg]")
     ax_roll.grid(True)
 
@@ -104,6 +113,7 @@ def main():
     def update(_):
         xs = data["x"]
         ys = data["y"]
+        ts = data["t"]
         yaws = data["yaw"]
         rolls = data["roll"]
 
@@ -117,13 +127,12 @@ def main():
         ax_xy.set_xlim(min(xs) - margin, max(xs) + margin)
         ax_xy.set_ylim(min(ys) - margin, max(ys) + margin)
 
-        idx = range(len(yaws))
-        line_yaw.set_data(idx, yaws)
-        ax_yaw.set_xlim(0, max(1, len(yaws)))
+        line_yaw.set_data(ts, yaws)
+        ax_yaw.set_xlim(ts[0], max(ts[0] + 1.0, ts[-1]))
         ax_yaw.set_ylim(min(yaws) - 5, max(yaws) + 5)
 
-        line_roll.set_data(range(len(rolls)), rolls)
-        ax_roll.set_xlim(0, max(1, len(rolls)))
+        line_roll.set_data(ts, rolls)
+        ax_roll.set_xlim(ts[0], max(ts[0] + 1.0, ts[-1]))
         ax_roll.set_ylim(min(rolls) - 5, max(rolls) + 5)
 
         return line_xy, dot_xy, line_yaw, line_roll

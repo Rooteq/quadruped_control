@@ -29,11 +29,11 @@ public:
         const std::array<Eigen::Vector3d, NUM_LEGS>& grfs);
 
 private:
-    // Stand: Cartesian PD gains — needs Kp*err > mg/4 per leg (~17 N for 7 kg robot)
+    // Stand: Cartesian PD gains — needs Kp*err > mg/4 per leg
     Eigen::Matrix3d Kp_stand_ = Eigen::DiagonalMatrix<double,3>(200.0, 200.0, 200.0);
     Eigen::Matrix3d Kd_stand_ = Eigen::DiagonalMatrix<double,3>(20.0,  20.0,  20.0);
 
-    // Walk: matches Python reference (Kp=400, Kd=75 with operational-space feedforward)
+    // Walk: Cartesian PD with operational-space feedforward
     Eigen::Matrix3d Kp_ = Eigen::DiagonalMatrix<double,3>(80.0, 80.0, 80.0);
     Eigen::Matrix3d Kd_ = Eigen::DiagonalMatrix<double,3>(15.0,  15.0,  15.0);
 };

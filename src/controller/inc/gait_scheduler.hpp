@@ -19,69 +19,40 @@ struct GaitDefinition
 
 namespace gaits
 {
-    // Phase offsets [FL, FR, BL, BR] match Python PHASE_OFFSET = [0.5, 0.0, 0.0, 0.5]:
-    // FR+BL (offset=0.0) are one diagonal pair; FL+BR (offset=0.5) are the other.
-    // Period=1/3 s (3 Hz), duty=0.6 match the Python reference — the 10-step MPC
-    // horizon at 33 ms/step covers one gait cycle, and 60% stance is more stable.
     inline const GaitDefinition TROT  = {"trot",  1.0/3.0, 0.6, {0.5, 0.0, 0.0, 0.5}};
-    inline const GaitDefinition WALK  = {"walk",  0.8,  0.75, {0.0, 0.5, 0.75, 0.25}};
-    inline const GaitDefinition PACE  = {"pace",  0.5,  0.5,  {0.0, 0.5, 0.0, 0.5}};
-    inline const GaitDefinition BOUND = {"bound", 0.5,  0.4,  {0.0, 0.0, 0.5, 0.5}};
-    inline const GaitDefinition PRONK = {"pronk", 0.5,  0.3,  {0.0, 0.0, 0.0, 0.0}};
+    inline const GaitDefinition WALK  = {"walk",  0.3,  0.6, {0.0, 0.5, 0.75, 0.25}};
+    inline const GaitDefinition PACE  = {"pace",  0.33,  0.5,  {0.0, 0.5, 0.0, 0.5}};
+    inline const GaitDefinition BOUND = {"bound", 0.33,  0.4,  {0.0, 0.0, 0.5, 0.5}};
+    inline const GaitDefinition PRONK = {"pronk", 0.33,  0.3,  {0.0, 0.0, 0.0, 0.0}};
     inline const GaitDefinition STAND = {"stand", 1.0,  1.0,  {0.0, 0.0, 0.0, 0.0}};
 }
 
 class GaitScheduler
 {
 public:
-    GaitScheduler() : gait_(gaits::TROT) {}
+    GaitScheduler() : gait_(gaits::WALK) {}
     explicit GaitScheduler(const GaitDefinition& gait) : gait_(gait) {}
 
-    void advance(double dt)
-    {
-        phase_ = std::fmod(phase_ + dt / gait_.period, 1.0);
-    }
+    void advance(double dt);
+    void setGait(const GaitDefinition& gait);
 
-    void setGait(const GaitDefinition& gait)
-    {
-        gait_ = gait;
-        // phase keeps running — new offsets/duty take effect immediately
-    }
-
-    bool inStance(int leg_idx) const
-    {
-        return legPhase(leg_idx) < gait_.duty_cycle;
-    }
+    bool inStance(int leg_idx) const;
 
     /// Normalized progress through swing [0, 1]. Returns -1 if leg is in stance.
-    double swingPhase(int leg_idx) const
-    {
-        double lp = legPhase(leg_idx);
-        if (lp < gait_.duty_cycle) return -1.0;
-        return (lp - gait_.duty_cycle) / (1.0 - gait_.duty_cycle);
-    }
+    double swingPhase(int leg_idx) const;
 
     /// Normalized progress through stance [0, 1]. Returns -1 if leg is in swing.
-    double stancePhase(int leg_idx) const
-    {
-        double lp = legPhase(leg_idx);
-        if (lp >= gait_.duty_cycle) return -1.0;
-        return lp / gait_.duty_cycle;
-    }
+    double stancePhase(int leg_idx) const;
 
     /// Contact schedule over a prediction horizon.
     /// contact_table[k][leg] = true if leg is in stance at horizon step k.
-    /// Evaluates at the midpoint of each MPC interval (k + 0.5)*dt, matching the
-    /// Python reference: t = t0 + arange(N)*dt + dt/2. This means contactTable()[0]
-    /// is evaluated half a step ahead of inStance(), which is intentional and mirrors
-    /// the Python behavior (compute_current_mask uses t0, contact_table uses t0+dt/2).
+    /// Evaluated at the midpoint of each MPC interval (k + 0.5)*dt.
     template<int N>
     std::array<std::array<bool, NUM_LEGS>, N> contactTable(double mpc_dt) const
     {
         std::array<std::array<bool, NUM_LEGS>, N> table{};
         for (int k = 0; k < N; ++k)
         {
-            // Midpoint sampling: (k + 0.5) * dt / period — matches Python's dt/2 centering.
             const double phase_offset_k = (k + 0.5) * mpc_dt / gait_.period;
 
             for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
@@ -95,22 +66,9 @@ public:
     }
 
     /// Per-leg stance/swing mask at the future-time offset `t` (seconds) from
-    /// the current phase_. Matches Python's `gait.compute_current_mask(time_now + t)`,
-    /// which is uncentered (no dt/2 shift). Use this for transition detection in
-    /// the per-horizon-step lever planner — keep it separate from contactTable()
-    /// (which centers samples) so the dynamics-side logic mirrors Python exactly.
-    std::array<bool, NUM_LEGS> contactMaskAt(double t) const
-    {
-        std::array<bool, NUM_LEGS> mask{};
-        const double phase_offset_t = t / gait_.period;
-        for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
-        {
-            const double future_phase = std::fmod(
-                phase_ + gait_.phase_offsets[leg] + phase_offset_t, 1.0);
-            mask[leg] = (future_phase < gait_.duty_cycle);
-        }
-        return mask;
-    }
+    /// the current phase_. Uncentered (no dt/2 shift) — used for transition
+    /// detection in the per-horizon-step lever planner.
+    std::array<bool, NUM_LEGS> contactMaskAt(double t) const;
 
     double stanceTime() const { return gait_.duty_cycle * gait_.period; }
     double swingTime()  const { return (1.0 - gait_.duty_cycle) * gait_.period; }
@@ -119,10 +77,7 @@ public:
     const GaitDefinition& gait() const { return gait_; }
 
 private:
-    double legPhase(int leg_idx) const
-    {
-        return std::fmod(phase_ + gait_.phase_offsets[leg_idx], 1.0);
-    }
+    double legPhase(int leg_idx) const;
 
     GaitDefinition gait_;
     double phase_ = 0.0;

@@ -44,7 +44,7 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
     const auto& nle = model.nonlinearEffects();   // C·v + g, canonical order
 
     // Cache the M factorization once — reused for every swing leg this tick.
-    // Only compute it if we actually have a swing leg; otherwise skip.
+    // Computed only when at least one leg is in swing.
     bool any_swing = false;
     for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
         if (!gait.inStance(leg)) { any_swing = true; break; }
@@ -69,7 +69,6 @@ std::array<double, NUM_JOINTS> DynamicController::computeTorques(
         else
         {
             // ── Swing: operational-space inertia + Jdot·v feedforward + Coriolis ──
-            // Mirrors Python:
             //   Λ      = (J·M⁻¹·Jᵀ)⁻¹               (3×3)
             //   f_ff   = Λ·(a_des − Jdot·v)
             //   force  = Kp·e_p + Kd·e_v + f_ff

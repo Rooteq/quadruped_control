@@ -21,7 +21,7 @@
         <light pos="0 0 3.5" dir="0 0 -1" directional="true" />
         <geom name="floor" size="0 0 0.05" pos="0 0 0" type="plane" material="groundplane" contype="2" conaffinity="1"/>
         <!-- Uneven Terrain -->
-        <geom type="box" size="0.078 0.072 0.027" pos="0.418 -1.425 0.027" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
+        <!-- <geom type="box" size="0.078 0.072 0.027" pos="0.418 -1.425 0.027" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
         <geom type="box" size="0.059 0.092 0.006" pos="0.530 1.177 0.006" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
         <geom type="box" size="0.053 0.070 0.024" pos="-0.844 0.016 0.024" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
         <geom type="box" size="0.109 0.131 0.005" pos="0.135 -0.839 0.005" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
@@ -66,6 +66,6 @@
         <geom type="box" size="0.065 0.080 0.034" pos="0.167 0.655 0.034" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
         <geom type="box" size="0.108 0.100 0.031" pos="0.744 -1.329 0.031" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
         <geom type="box" size="0.058 0.069 0.023" pos="-1.028 1.382 0.023" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
-        <geom type="box" size="0.062 0.139 0.012" pos="0.526 -0.794 0.012" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/>
+        <geom type="box" size="0.062 0.139 0.012" pos="0.526 -0.794 0.012" rgba="0.6 0.5 0.4 1" contype="1" conaffinity="1"/> -->
     </worldbody>
 </mujoco>

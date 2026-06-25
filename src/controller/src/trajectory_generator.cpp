@@ -38,10 +38,8 @@ std::array<LegTarget, NUM_LEGS> TrajectoryGenerator::generate(
 
         if (gait.inStance(leg))
         {
-            // On swing→stance transition, lock the touchdown position.
-            // Holding this anchor means the Cartesian PD (used as fallback when
-            // a leg is mis-routed to swing) pulls back to the correct foothold
-            // rather than following wherever the foot drifted.
+            // On swing→stance transition, lock the touchdown position so the
+            // Cartesian PD fallback pulls back to the correct foothold.
             if (!swing_states_[leg].stance_initialized)
             {
                 swing_states_[leg].stance_foot_pos   = p_world;
@@ -86,40 +84,34 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
     const Eigen::Vector3d& desired_vel,
     double desired_yaw_rate) const
 {
-    // p_h,i — current hip projected onto ground plane (paper eq 6 "ph,i").
-    // The small 0.02 m z lift is foot-landing clearance, not on the paper.
+    // Current hip projected onto the ground plane. The 0.02 m z lift is
+    // foot-landing clearance.
     Eigen::Vector3d base_pos = model.bodyPosition();
     base_pos.z() = 0.0;
     const Eigen::Matrix3d& R_z = model.bodyYawRotation();
     const Eigen::Vector3d hip_pos_world = base_pos + R_z * hipPos[leg_idx];
     const Eigen::Vector3d p_h(hip_pos_world.x(), hip_pos_world.y(), 0.02);
 
-    // T_cφ/2 — half of scheduled stance time (paper eq 6 time scaling).
+    // Half of scheduled stance time.
     const double t_stance    = gait.gait().duty_cycle * gait.gait().period;
     const double half_stance = 0.5 * t_stance;
 
-    // ── Foot-placement gains ──────────────────────────────────────────
-    // Paper eq 6 uses both terms with implicit unit gain. Raibert gain > 1
-    // makes the foot land further in the direction of motion (longer stride,
-    // body catches itself further out — useful when the robot tends to fall
-    // forward or undersamples the contact patch). Capture gain > 1 makes the
-    // velocity-error correction more aggressive (more damping at the cost of
-    // potential overshoot).
-    constexpr double K_RAIBERT = 1.0;   // step further forward (paper = 1.0)
-    constexpr double K_CAPTURE = 1.0;   // stronger velocity-error correction
+    // Foot-placement gains. >1 makes the foot land further in the direction of
+    // motion (Raibert) or applies more aggressive velocity-error correction
+    // (capture).
+    constexpr double K_RAIBERT = 1.0;
+    constexpr double K_CAPTURE = 1.0;
 
     // Desired velocity rotated to world frame (cmd is body-frame).
     const Eigen::Vector3d v_des_world = R_z * desired_vel;
 
-    // ── Raibert heuristic: K_RAIBERT · (T_cφ/2) · v_des  ──────────────
+    // Raibert heuristic: K_RAIBERT · (T_stance/2) · v_des
     const Eigen::Vector3d raibert(K_RAIBERT * half_stance * v_des_world.x(),
                                   K_RAIBERT * half_stance * v_des_world.y(),
                                   0.0);
 
-    // ── Capture point: K_CAPTURE · sqrt(z0/|g|) · (v − v_des)  ────────
-    // z0 = nominal locomotion height; NOMINAL_HEIGHT is the body-frame foot z
-    // when standing (negative), so |NOMINAL_HEIGHT| gives the CoM height above
-    // the feet. g = 9.81 m/s².
+    // Capture point: K_CAPTURE · sqrt(z0/|g|) · (v − v_des). z0 is the CoM
+    // height above the feet (|NOMINAL_HEIGHT|).
     constexpr double g_mag = 9.81;
     const double z0    = std::abs(NOMINAL_HEIGHT);
     const double k_cap = std::sqrt(z0 / g_mag);
@@ -127,9 +119,8 @@ Eigen::Vector3d TrajectoryGenerator::computeLandingPos(
                                   K_CAPTURE * k_cap * (current_vel.y() - v_des_world.y()),
                                   0.0);
 
-    // ── Rot correction (extension, not in paper) ──────────────────────
-    // Predict hip displacement due to COMMANDED yaw rate over T_cφ/2 —
-    // self-consistent with the Raibert term (both use desired motion).
+    // Rotation correction: hip displacement due to commanded yaw rate over
+    // T_stance/2.
     const double dtheta = desired_yaw_rate * half_stance;
     const double r_x = hip_pos_world.x() - base_pos.x();
     const double r_y = hip_pos_world.y() - base_pos.y();

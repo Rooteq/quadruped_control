@@ -1,0 +1,141 @@
+@startuml controller_class_diagram
+title Quadruped Controller — Class Diagram
+
+hide empty members
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+skinparam classAttributeIconSize 0
+
+' ───────────── Orchestrator ─────────────
+class Controller {
+  -desired_linear_vel_ / desired_angular_vel_
+  -x_ref_[HORIZON_STEPS] : reference trajectory
+  -leg_targets_[NUM_LEGS]
+  -grfs_[NUM_LEGS]
+  -standing_complete_
+  --
+  +setDesiredVelocity()
+  +calculateDesiredBodyTrajectory() : x_ref over horizon
+  +runPlanning() : update gait + leg targets
+  +updateMPC() / calculateDynamicsMatrices() / runMPC()
+  +calculateControl() : joint torques (walk)
+  +calculateStand() : joint torques (stand-up)
+}
+
+' ───────────── Shared state ─────────────
+
+class QuadroModel {
+  -model_ / data_ : Pinocchio
+  -q_ / dq_ / effort_ : joint state
+  -x : 13-state vector
+  -R_b_w_ / base_position_
+  --
+  +updateState() : Pinocchio FK / CRBA / CoM
+  +updateBaseState() : pose + twist from odom
+  +stateVector() : x = [rpy, p, w, v, -g]
+  +footPosition() / footVelocity()
+  +footJacobian() / footJdotV()
+  +massMatrix() / nonlinearEffects()
+  +bodyInertia() / mass()
+}
+
+' ───────────── Gait timing ─────────────
+class GaitScheduler {
+  -gait_ : GaitDefinition
+  -phase_ : [0,1)
+  --
+  +advance(dt) : step phase
+  +inStance() / swingPhase() / stancePhase()
+  +contactTable() : stance mask over horizon
+  +contactMaskAt(t)
+}
+
+class GaitDefinition <<struct>> {
+  +period
+  +duty_cycle
+  +phase_offsets[NUM_LEGS]
+}
+
+' ───────────── Foot trajectory ─────────────
+class TrajectoryGenerator {
+  -swing_states_[NUM_LEGS] : SwingState
+  -hipPos[NUM_LEGS] : nominal hip offsets
+  --
+  +generate() : LegTarget[] (swing + stance)
+  -computeLandingPos() : Raibert + capture-point foot placement
+  -evaluateSwing() : Bezier swing arc (pos)
+  -evaluateSwingVelocity() / evaluateSwingAcceleration()
+  +computeHorizonLevers() : per-step foot levers for MPC
+  +nominalFootPosition()
+}
+
+class SwingState <<struct>> {
+  +liftoff_pos
+  +landing_pos
+  +apex_height
+  +active
+}
+
+class LegTarget <<struct>> {
+  +foot_pos
+  +foot_vel
+  +foot_acc
+}
+
+' ───────────── Force / torque ─────────────
+class MPC {
+  -x0_ / mass_ / body_inertia_
+  -Ad_[k] / Bd_[k] : discrete dynamics
+  -contact_schedule_ / levers_
+  -Q_WEIGHTS / mu_ / fz_min_,fz_max_
+  -grfs_[NUM_LEGS]
+  --
+  +update() : snapshot state + levers + contacts
+  +calculateDynamicsMatrices() : build Ad[k], Bd[k]
+  +run_casadi() : solve QP (OSQP)
+  +groundReactionForces() : GRFs[NUM_LEGS]
+}
+
+class DynamicController {
+  -Kp_ / Kd_ : swing gains
+  -Kp_stand_ / Kd_stand_ : stand gains
+  --
+  +computeTorques() : stance Jᵀ(-f_grf) + swing op-space PD
+  +computeStand() : Cartesian PD to nominal pose
+}
+
+' ───────────── Ownership (composition) ─────────────
+Controller *-- QuadroModel
+Controller *-- GaitScheduler
+Controller *-- TrajectoryGenerator
+Controller *-- MPC
+Controller *-- DynamicController
+
+GaitScheduler *-- GaitDefinition
+TrajectoryGenerator *-- "NUM_LEGS" SwingState
+
+' ───────────── Data flow / reads (dependency) ─────────────
+TrajectoryGenerator ..> QuadroModel : foot/base state
+TrajectoryGenerator ..> GaitScheduler : phase, stance/swing
+TrajectoryGenerator ..> LegTarget : produces
+
+MPC ..> QuadroModel : state, inertia
+MPC ..> GaitScheduler : contact schedule
+
+DynamicController ..> QuadroModel : Jacobians, dynamics
+DynamicController ..> LegTarget : tracks (swing)
+
+note as N1
+  Per control tick:
+  GaitScheduler  → who is in stance / swing
+  TrajectoryGenerator → swing foot pos/vel/acc + landing point
+  MPC → stance ground-reaction forces (GRFs)
+  DynamicController → joint torques
+      stance leg : τ = Jᵀ·(−GRF)
+      swing  leg : τ = Jᵀ·(PD + Λ·a_ff) + (C·v+g)
+end note
+
+N1 .. DynamicController
+
+@enduml

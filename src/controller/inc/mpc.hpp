@@ -14,8 +14,7 @@
 namespace quadro
 {
 
-// ── MPC horizon ───────────────────────────────────────────────────────────────
-// Defined here so both MPC and Controller use the same constants.
+// MPC horizon — shared by MPC and Controller.
 // Total prediction window: HORIZON_STEPS × MPC_DT = 0.33 s
 static constexpr int    HORIZON_STEPS = 10;
 static constexpr double MPC_DT        = 0.033;
@@ -28,7 +27,6 @@ public:
     /// Called once per mpcCallback before any matrix computation.
     /// `levers[k][leg]` is the foot-to-CoM lever arm (world frame) for the leg
     /// at horizon step k — zero for swing steps, held constant per stance phase.
-    /// Built by TrajectoryGenerator::computeHorizonLevers().
     void update(const QuadroModel& model,
                 const Eigen::Vector3d& angular_vel_cmd,
                 const Eigen::Vector3d& linear_vel_cmd,
@@ -36,18 +34,14 @@ public:
                 const GaitScheduler& gait_scheduler,
                 const std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS>& levers);
 
-    /// Build Ac/Ad (single, from average yaw) and Bc[n]/Bd[n] (per step, from
-    /// per-step yaw and contact schedule). Must be called after update().
+    /// Build per-step Ac/Ad and Bc/Bd from per-step yaw and contact schedule.
+    /// Must be called after update().
     void calculateDynamicsMatrices();
 
-    /// Solve QP using CasADi sparse formulation exactly like Python project
+    /// Solve QP using the CasADi/OSQP sparse formulation.
     void run_casadi();
 
-    // ── Accessors ─────────────────────────────────────────────────
     // Per-step A matrices — index by horizon step [0, HORIZON_STEPS).
-    // Built from the per-step reference yaw ψ_ref[n] so the Θ̇ = Rzᵀ(ψ)·ω
-    // kinematics map is correct at each horizon step (no single-avg-yaw
-    // approximation).
     const std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS>& continuousA() const { return Ac_; }
     const std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS>& discreteA()   const { return Ad_; }
 
@@ -55,16 +49,14 @@ public:
     const std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS>& continuousB() const { return Bc_; }
     const std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS>& discreteB()   const { return Bd_; }
 
-    // Reference trajectory set by last update() — read by QP builder
     const std::array<Eigen::Matrix<double, 13, 1>, HORIZON_STEPS>& referenceTrajectory() const { return x_ref_; }
 
-    // Contact schedule: contact_schedule_[k][leg] = true if leg is stance at step k
+    // contact_schedule_[k][leg] = true if leg is stance at step k
     const std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS>& contactSchedule() const { return contact_schedule_; }
 
-    // Current state snapshot
     const Eigen::Matrix<double, 13, 1>& currentState() const { return x0_; }
 
-    // GRFs produced by run() — one 3D force per leg (world frame), zero for swing
+    // GRFs produced by the solve — one 3D force per leg (world frame), zero for swing
     const std::array<Eigen::Vector3d, NUM_LEGS>& groundReactionForces() const { return grfs_; }
 
 private:
@@ -74,8 +66,7 @@ private:
     double                                                   mass_         = 0.0;
     Eigen::Matrix3d                                          body_inertia_ = Eigen::Matrix3d::Zero();
     // Per-horizon-step lever arms r[k][leg] = foot_world − base_traj_world.
-    // Built by TrajectoryGenerator::computeHorizonLevers() (mirrors Python's
-    // r_*_traj_world). Zero on swing steps, held constant during stance phases.
+    // Zero on swing steps, held constant during stance phases.
     std::array<std::array<Eigen::Vector3d, NUM_LEGS>, HORIZON_STEPS> levers_{};
     Eigen::Vector3d                                          angular_vel_cmd_ = Eigen::Vector3d::Zero();
     Eigen::Vector3d                                          linear_vel_cmd_  = Eigen::Vector3d::Zero();
@@ -83,19 +74,14 @@ private:
     std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS>    contact_schedule_{};
 
     // ── Computed matrices ──────────────────────────────────────────
-    // Per-step Ac_[n] / Ad_[n] (13×13) built from the per-step reference
-    // yaw ψ_ref[n]. With the sparse QP formulation the per-step variation
-    // costs nothing structurally — only the numeric values in each row
-    // block of the dynamics-equality matrix change.
+    // Per-step Ac_[n] / Ad_[n] (13×13) built from the per-step reference yaw.
     std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS> Ac_{};
     std::array<Eigen::Matrix<double, 13, 13>, HORIZON_STEPS> Ad_{};
 
-    // Per-step: Bc_[n] and Bd_[n] are 13×12 (4 legs × 3 forces)
+    // Per-step Bc_[n] / Bd_[n] (13×12 = 4 legs × 3 forces)
     std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS> Bc_{};
     std::array<Eigen::Matrix<double, 13, 12>, HORIZON_STEPS> Bd_{};
 
-
-    // ── Output (populated by run()) ───────────────────────────────
     // grfs_[i] = 3D GRF for leg i (world frame). Zero for swing legs.
     // Layout matches LegIdx: FL=0, FR=1, BL=2, BR=3
     std::array<Eigen::Vector3d, NUM_LEGS> grfs_{
@@ -113,8 +99,8 @@ private:
     // ── Tuning parameters ─────────────────────────────────────────
     static constexpr double mu_     = 0.8;    // friction coefficient
     static constexpr double fz_min_ = 2.0;    // min normal GRF [N]
-    static constexpr double fz_max_ = 70.0;  // max normal GRF [N]  (~2x static load per leg for 5kg trot)
-    static constexpr double alpha_  = 1e-5;   // regularisation (force magnitude)
+    static constexpr double fz_max_ = 70.0;   // max normal GRF [N]
+    static constexpr double alpha_  = 1e-5;   // force-magnitude regularisation
 
     // State cost weights: [roll, pitch, yaw, px, py, pz, wx, wy, wz, vx, vy, vz, -g]
     static constexpr double Q_WEIGHTS[N_STATE] = {
@@ -125,15 +111,11 @@ private:
          0.0                // -g, don't penalise
     };
 
-    // ── Pre-allocated QP matrices ──────────────────────────────────
-    // Condensed system: X = Aqp*x0 + Bqp*U
+    // ── Pre-allocated QP matrices (condensed system X = Aqp*x0 + Bqp*U) ──
     Eigen::Matrix<double, N_PRED, N_STATE>  Aqp_     = Eigen::Matrix<double, N_PRED, N_STATE>::Zero();
     Eigen::Matrix<double, N_PRED, N_VAR>    Bqp_     = Eigen::Matrix<double, N_PRED, N_VAR>::Zero();
 
-    // Diagonal of the block-diagonal state cost matrix L (N_PRED entries)
     Eigen::Matrix<double, N_PRED, 1>        L_diag_  = Eigen::Matrix<double, N_PRED, 1>::Zero();
-
-    // Stacked reference: X_ref = [x_ref[0]; ...; x_ref[k-1]]
     Eigen::Matrix<double, N_PRED, 1>        X_ref_qp_ = Eigen::Matrix<double, N_PRED, 1>::Zero();
 
     // QP cost: ½UᵀHU + gᵀU
@@ -141,7 +123,6 @@ private:
     Eigen::Matrix<double, N_VAR, 1>         g_qp_    = Eigen::Matrix<double, N_VAR, 1>::Zero();
 
     // Friction-pyramid constraint matrix and bounds: lbC <= C*U <= ubC
-    // N_CON×N_VAR — stored as dynamic matrix (heap allocated at construction).
     Eigen::MatrixXd C_   = Eigen::MatrixXd::Zero(N_CON, N_VAR);
     Eigen::Matrix<double, N_CON, 1>         lbC_     = Eigen::Matrix<double, N_CON, 1>::Zero();
     Eigen::Matrix<double, N_CON, 1>         ubC_     = Eigen::Matrix<double, N_CON, 1>::Zero();
@@ -151,12 +132,10 @@ private:
     Eigen::Matrix<double, N_VAR, 1>         ub_      = Eigen::Matrix<double, N_VAR, 1>::Zero();
 
     // Row-major copies required by qpOASES (which expects C-order arrays).
-    // H_qp_ is fine fixed-size; C_qp_ also dynamic for the same reason as C_.
     Eigen::Matrix<double, N_VAR, N_VAR, Eigen::RowMajor> H_qp_;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
         C_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Zero(N_CON, N_VAR);
 
-    // ── qpOASES solver ────────────────────────────────────────────
     qpOASES::QProblem qp_{N_VAR, N_CON, qpOASES::HST_POSDEF};
 
     // Warm start: primal (N_VAR) + dual (N_VAR + N_CON) from previous solve
@@ -165,7 +144,6 @@ private:
     Eigen::Matrix<double, N_DUAL, 1> y_warm_ = Eigen::Matrix<double, N_DUAL, 1>::Zero();
     bool has_warm_start_ = false;
 
-    // Previous contact schedule — used to detect transitions and invalidate warm start
     std::array<std::array<bool, NUM_LEGS>, HORIZON_STEPS> prev_contact_schedule_{};
 
     // CasADi/OSQP conic solver (run_casadi) — cached across calls

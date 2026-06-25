@@ -57,19 +57,13 @@ public:
     }
 
     /// Per-horizon-step foot lever arms r_i = foot_world − base_traj_world,
-    /// matching Python's ComTraj.generate_traj loop. Lever for a swing step is
-    /// zero (leg can't apply force); lever for a stance step is the value computed
-    /// at the leg's last takeoff (or the current foot lever for legs already in
-    /// stance at horizon start) and held constant across that stance phase.
+    /// feeding MPC's B[n] construction. Lever for a swing step is zero (leg
+    /// can't apply force); lever for a stance step is the value computed at the
+    /// leg's last takeoff (or the current foot lever for legs already in stance
+    /// at horizon start) and held constant across that stance phase.
     ///
-    /// This is what feeds MPC's B[n] construction — replaces the old "single foot
-    /// snapshot per leg" model so legs that lift off / touch down within the
-    /// horizon get the right lever per step.
-    ///
-    /// Body trajectory is integrated as base_traj = current_CoM + vel_des_world·t,
-    /// matching Python's pos_traj_world (no position anchor). The touchdown plan
-    /// uses only nominal + drift + rotation correction (no k_v/k_p) — same as
-    /// Python's compute_touchdown_world_for_traj_purpose_only.
+    /// Body trajectory is integrated as base_traj = current_CoM + vel_des_world·t.
+    /// The touchdown plan uses only nominal + drift + rotation correction.
     template<int N>
     void computeHorizonLevers(
         const QuadroModel& model,
@@ -87,8 +81,8 @@ public:
         const Eigen::Vector3d vel_des_world = R_z_init * desired_linear_vel_body;
         const double yaw_rate = desired_angular_vel_body[2];
 
-        // Initial r_next_td = current foot − current CoM (Python: get_foot_lever_world).
-        // For legs already in stance at horizon start, this becomes the held lever.
+        // Initial r_next_td = current foot − current CoM. For legs already in
+        // stance at horizon start, this becomes the held lever.
         std::array<Eigen::Vector3d, NUM_LEGS> r_next_td;
         for (int leg = 0; leg < static_cast<int>(NUM_LEGS); ++leg)
             r_next_td[leg] = model.footPosition(leg) - com_world;
@@ -102,8 +96,8 @@ public:
 
         for (int i = 0; i < N; ++i)
         {
-            // Python: dummy.base_pos = pos_traj_world[:, i] uses (i+1)*dt offset,
-            // while compute_current_mask is called at i*dt. Match that off-by-one.
+            // Body position uses an (i+1)*dt offset; the contact mask is
+            // evaluated at i*dt (intentional off-by-one).
             const double t_pos  = (i + 1) * mpc_dt;
             const double t_mask = i * mpc_dt;
 
@@ -128,8 +122,6 @@ public:
                     const Eigen::Vector3d hip_pos_world = base_pos_traj + R_z_traj * hipPos[leg];
                     const Eigen::Vector3d pos_nominal(hip_pos_world.x(), hip_pos_world.y(), 0.02);
 
-                    // Drift: Python uses dummy.base_vel (BODY-frame velocity from dq[0:3])
-                    // in a world-frame term. Match literally — for trot in place vel=0 anyway.
                     const Eigen::Vector3d drift(desired_linear_vel_body.x() * pred_time,
                                                 desired_linear_vel_body.y() * pred_time, 0.0);
 
@@ -162,10 +154,8 @@ public:
     }
 
 private:
-    /// Foot placement combining the Raibert heuristic with the capture-point
-    /// correction from MIT Cheetah 3 (Bledt 2018, eq 6):
+    /// Foot placement: Raibert heuristic + capture-point correction.
     ///     p_step = p_hip + (T_stance/2)·v_des + sqrt(z0/g)·(v − v_des) + rot_correction
-    /// Rot_correction is an extension (not in the paper) for turning support.
     Eigen::Vector3d computeLandingPos(
         const QuadroModel& model,
         const GaitScheduler& gait,
@@ -188,12 +178,6 @@ private:
     std::array<SwingState, NUM_LEGS> swing_states_;
 
     double dt_ = 0.033;
-    // Eigen::Vector3d hipPos[NUM_LEGS] = {
-    //                 {0.215, 0.13, 0.0},
-    //                 {0.215, -0.13, 0.0},
-    //                 {-0.180, 0.13, 0.0},
-    //                 {-0.180, -0.13, 0.0}
-    //             };
 
     Eigen::Vector3d hipPos[NUM_LEGS] = {
                     {0.19, 0.17, -0.05},
@@ -201,12 +185,6 @@ private:
                     {-0.19, 0.17, -0.05},
                     {-0.19, -0.17, -0.05}
                 };
-
-    // Eigen::Vector3d legs_origin[NUM_LEGS] = {{0.185, 0.0628, 0.0},
-    //                 {0.185, -0.0628, 0.0},
-    //                 {-0.185, 0.0628, 0.0},
-    //                 {-0.185, -0.0628, 0.0}};
-
 };
 
 } // namespace quadro
